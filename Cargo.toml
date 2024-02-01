@@ -1,0 +1,30 @@
+[package]
+name = "forum"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.7.4" }
+config = "0.13.4"
+env_logger = "0.11.1"
+lazy_static = "1.4.0"
+log = "0.4.20"
+serde = { version = "1.0.196", features = ["derive"] }
+sqlx = { version = "0.7.3", features = ["runtime-tokio-native-tls", "mysql", "sqlx-mysql", "chrono"] }
+tokio = { version = "1.35.1", features = ["full"] }
+async-trait = "0.1.77"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+tower = { version = "0.4.13", features = ["full"] }
+tower-http = { version = "0.5.1", features = ["full"] }
+chrono = { version = "0.4.33", features = ["serde"] }
+either = { version = "1.9.0", features = ["serde"] }
+utoipa = { version = "4.2.0", features = ["axum_extras", "chrono", "debug"] }
+thiserror = "1.0.56"
+utoipa-swagger-ui = { version = "6.0.0", features = ["axum", "debug"] }
+tower-sessions = "0.10.1"
+tower-sessions-redis-store = "0.10.0"
+axum-login = "0.13.1"
+fred = "8.0.1"
+anyhow = "1.0.79"
+time = "0.3.32"

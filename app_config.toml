@@ -1,0 +1,20 @@
+# ======================
+#    论坛后端系统配置文件
+# ======================
+
+# API服务器所在的端口号
+port = 8010
+
+# 数据库连接信息
+[database]
+url = "mysql://10.80.43.196:3306/forum_dev"
+username = "forum"
+password = "rememberus1nthed@yofend"
+
+# Redis连接信息
+[redis]
+url = "redis://:rememberus@10.80.42.189/13"
+
+# Redis Session连接信息（和上一个保持相同即可）
+[redis-session]
+url = "redis://:rememberus@10.80.42.189/13"
