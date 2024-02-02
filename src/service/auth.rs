@@ -1,11 +1,14 @@
 use crate::config::database::Db;
+use crate::config::permission::PermissionConfig;
+use crate::config::{get_config, permission};
 use crate::entity::student::Student;
 use crate::repository::user_repo::{UserRepository, UserRepositoryTrait};
 use async_trait::async_trait;
-use axum_login::{AuthUser, AuthnBackend, UserId};
+use axum_login::{AuthUser, AuthnBackend, AuthzBackend, UserId};
 use easy_hex::Hex;
 use md5::{Digest, Md5};
 use serde::Deserialize;
+use std::collections::HashSet;
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use utoipa::ToSchema;
@@ -40,12 +43,16 @@ pub struct Credentials {
 #[derive(Debug, Clone)]
 pub struct AuthBackend {
     user_repo: UserRepository,
+    permission_config: PermissionConfig,
 }
 
 impl AuthBackend {
     pub fn new(db: &Arc<Db>) -> Self {
+        let config = get_config();
+        let guard = config.read().unwrap();
         Self {
             user_repo: UserRepository::new(db),
+            permission_config: guard.permission.clone(),
         }
     }
 
@@ -77,5 +84,30 @@ impl AuthnBackend for AuthBackend {
 
     async fn get_user(&self, user_id: &UserId<Self>) -> Result<Option<Self::User>, Self::Error> {
         Ok(self.user_repo.find_by_id(user_id).await)
+    }
+}
+
+#[async_trait]
+impl AuthzBackend for AuthBackend {
+    type Permission = permission::Permission;
+
+    async fn get_user_permissions(
+        &self,
+        _user: &Self::User,
+    ) -> Result<HashSet<Self::Permission>, Self::Error> {
+        let mut permission_set: HashSet<Self::Permission> = Default::default();
+
+        let level: i32 = _user.stu_user_level.parse().unwrap_or(0);
+        if level >= self.permission_config.admin {
+            permission_set.insert(Self::Permission::ADMIN);
+        }
+        if level >= self.permission_config._super {
+            permission_set.insert(Self::Permission::SUPER);
+        }
+        if level >= self.permission_config.ta {
+            permission_set.insert(Self::Permission::TA);
+        }
+
+        Ok(permission_set)
     }
 }

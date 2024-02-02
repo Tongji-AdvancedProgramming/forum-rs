@@ -1,18 +1,20 @@
 pub mod post {
-    use crate::error::auth_error::AuthError;
-    use crate::response::api_response::ApiResponse;
-    use crate::service::auth::{AuthBackend, Credentials};
     use axum::response::IntoResponse;
     use axum::Form;
     use axum_login::AuthSession;
     use either::Left;
 
+    use crate::error::auth_error::AuthError;
+    use crate::response::api_response::ApiResponse;
+    use crate::service::auth::{AuthBackend, Credentials};
+
+    /// 登录
     #[utoipa::path(
         post,
         path = "/login",
         tag = "Auth",
         responses(
-            (status = 200, description = "登录成功", body = inline(ApiResponse)),
+            (status = 200, description = "登录成功", body = inline(ApiResponse<i32>)),
             (status = 401, description = "密码错误"),
             (status = 500, description = "登录异常")
         ),
@@ -38,5 +40,40 @@ pub mod post {
         }
 
         ApiResponse::send(Left(None::<i32>)).into_response()
+    }
+}
+
+pub mod get {
+    use crate::error::auth_error::AuthError;
+    use crate::response::api_response::ApiResponse;
+    use crate::service::auth::AuthBackend;
+    use askama::Template;
+    use axum::response::IntoResponse;
+    use axum_login::AuthSession;
+    use either::Left;
+
+    #[derive(Template)]
+    #[template(path = "login.html")]
+    pub struct LoginTemplate;
+
+    pub async fn login() -> LoginTemplate {
+        LoginTemplate {}
+    }
+
+    /// 登出
+    #[utoipa::path(
+        get,
+        path = "/logout",
+        tag = "Auth",
+        responses(
+            (status = 200, description = "登出成功", body = inline(ApiResponse<i32>)),
+            (status = 500, description = "登出异常")
+        ),
+    )]
+    pub async fn logout(mut auth_session: AuthSession<AuthBackend>) -> impl IntoResponse {
+        match auth_session.logout().await {
+            Ok(_) => ApiResponse::send(Left(None::<i32>)).into_response(),
+            Err(_) => AuthError::AuthFailed.into_response(),
+        }
     }
 }

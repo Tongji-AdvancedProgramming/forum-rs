@@ -15,6 +15,8 @@ password = "rememberus1nthed@yofend"
 [redis]
 url = "redis://:rememberus@10.80.42.189/13"
 
-# Redis Session连接信息（和上一个保持相同即可）
-[redis-session]
-url = "redis://:rememberus@10.80.42.189/13"
+# 权限对应用户等级
+[permission]
+ta = 1
+admin = 5
+super = 9

@@ -4,6 +4,8 @@ use std::process::exit;
 use std::sync::Arc;
 
 use log::{error, info};
+use time::Duration;
+use tower_sessions::{Expiry, SessionManagerLayer};
 
 use crate::config::database::DatabaseTrait;
 use crate::config::redis::RedisTrait;
@@ -38,16 +40,25 @@ async fn main() {
         });
     let db_conn = Arc::new(db_conn);
 
-    // Session层
-    let redis_session = session::RedisSession::init().await.unwrap_or_else(|e| {
+    let redis_conn = Arc::new(redis::Redis::init().await.unwrap_or_else(|e| {
+        error!("\n[Redis Connection Failed]\nRedis连接失败，请检查配置是否正确、网络连接情况和服务端配置\n\n{}",e);
+        panic()
+    }));
+    let redis_conn_handle = redis_conn.get_pool().connect();
+    redis_conn.get_pool().wait_for_connect().await.unwrap_or_else(|e| {
         error!("\n[Redis Connection Failed]\nRedis连接失败，请检查配置是否正确、网络连接情况和服务端配置\n\n{}",e);
         panic()
     });
 
+    // Session层
+    let session_store = session::RedisSession::new(&redis_conn);
+    let session_layer = SessionManagerLayer::new(session_store)
+        .with_secure(false)
+        .with_expiry(Expiry::OnInactivity(Duration::days(1)));
+
     // 验证层
     let auth_backend = AuthBackend::new(&db_conn);
-    let auth_layer =
-        AuthManagerLayerBuilder::new(auth_backend, redis_session.session_layer).build();
+    let auth_layer = AuthManagerLayerBuilder::new(auth_backend, session_layer).build();
 
     let host: String;
     {
@@ -76,5 +87,5 @@ async fn main() {
         panic()
     });
 
-    redis_session.conn_handle.await.unwrap().unwrap();
+    redis_conn_handle.await.unwrap().unwrap();
 }

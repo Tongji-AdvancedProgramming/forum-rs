@@ -1,43 +1,67 @@
-use crate::config::get_config;
-use serde::Deserialize;
-use std::time::Duration;
-use tower_sessions::{Expiry, SessionManagerLayer};
-use tower_sessions_redis_store::fred::prelude::*;
-use tower_sessions_redis_store::fred::types::ConnectHandle;
-use tower_sessions_redis_store::RedisStore;
+use std::sync::Arc;
 
-#[derive(Default, Debug, Deserialize, Eq, PartialEq)]
-pub struct RedisSessionConfig {
-    pub url: String,
-}
+use crate::config::redis::{Redis, RedisTrait};
+use async_trait::async_trait;
+use fred::prelude::*;
+use fred::serde_json;
+use tower_sessions::session::{Id, Record};
+use tower_sessions::SessionStore;
 
+#[derive(Debug, Clone)]
 pub struct RedisSession {
-    pub conn_handle: ConnectHandle,
-    pub session_layer: SessionManagerLayer<RedisStore<RedisPool>>,
+    pool: Arc<Redis>,
 }
 
 impl RedisSession {
-    pub async fn init() -> Result<Self, RedisError> {
-        let url: String;
-        {
-            let config = get_config();
-            let guard = config.read().unwrap();
-            url = guard.redis.url.clone();
+    pub fn new(redis_pool: &Arc<Redis>) -> Self {
+        Self {
+            pool: Arc::clone(redis_pool),
         }
+    }
+}
 
-        let config = RedisConfig::from_url(&url)?;
-        let pool = RedisPool::new(config, None, None, None, 1)?;
-        let conn_handle = pool.connect();
-        pool.wait_for_connect().await?;
+#[async_trait]
+impl SessionStore for RedisSession {
+    async fn save(&self, session_record: &Record) -> tower_sessions::session_store::Result<()> {
+        let json = serde_json::to_string(session_record);
+        if json.is_err() {
+            return Err(tower_sessions::session_store::Error::Backend(
+                json.err().unwrap().to_string(),
+            ));
+        }
+        match self
+            .pool
+            .get_pool()
+            .set::<String, _, _>(
+                session_record.id.0,
+                json.unwrap(),
+                Some(Expiration::EXAT(
+                    session_record.expiry_date.unix_timestamp(),
+                )),
+                None,
+                false,
+            )
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(e) => Err(tower_sessions::session_store::Error::Backend(e.to_string())),
+        }
+    }
 
-        let session_store = RedisStore::new(pool);
-        let session_layer = SessionManagerLayer::new(session_store)
-            .with_secure(false)
-            .with_expiry(Expiry::OnInactivity(time::Duration::days(1)));
+    async fn load(&self, session_id: &Id) -> tower_sessions::session_store::Result<Option<Record>> {
+        match self.pool.get_pool().get::<String, _>(session_id.0).await {
+            Ok(json) => match serde_json::from_str(&json) {
+                Ok(record) => Ok(Some(record)),
+                Err(e) => Err(tower_sessions::session_store::Error::Backend(e.to_string())),
+            },
+            Err(_) => Ok(None),
+        }
+    }
 
-        Ok(Self {
-            conn_handle,
-            session_layer,
-        })
+    async fn delete(&self, session_id: &Id) -> tower_sessions::session_store::Result<()> {
+        match self.pool.get_pool().del::<String, _>(session_id.0).await {
+            Ok(_) => Ok(()),
+            Err(e) => Err(tower_sessions::session_store::Error::Backend(e.to_string())),
+        }
     }
 }

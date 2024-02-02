@@ -8,6 +8,7 @@ pub struct RedisAppConfig {
     pub url: String,
 }
 
+#[derive(Debug)]
 pub struct Redis {
     pool: RedisPool,
 }

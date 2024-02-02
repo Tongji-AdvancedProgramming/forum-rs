@@ -3,8 +3,8 @@
 use std::sync::{Arc, RwLock};
 
 use crate::config::database::DatabaseConfig;
+use crate::config::permission::PermissionConfig;
 use crate::config::redis::RedisAppConfig;
-use crate::config::session::{RedisSession, RedisSessionConfig};
 use config::Config;
 use lazy_static::lazy_static;
 use log::error;
@@ -17,14 +17,13 @@ pub struct AppConfig {
     pub port: u16,
     pub database: DatabaseConfig,
     pub redis: RedisAppConfig,
-    #[serde(rename = "redis-session")]
-    pub redis_session: RedisSessionConfig,
+    pub permission: PermissionConfig,
 }
 
 pub type AppConf = Arc<RwLock<AppConfig>>;
 
 lazy_static! {
-    pub static ref APP_CONFIG: AppConf = { Arc::new(RwLock::new(Default::default())) };
+    pub static ref APP_CONFIG: AppConf = Arc::new(RwLock::new(Default::default()));
 }
 
 pub fn init() {
