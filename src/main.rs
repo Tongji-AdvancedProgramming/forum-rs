@@ -1,3 +1,4 @@
+use axum_login::AuthManagerLayerBuilder;
 use fred::interfaces::ClientLike;
 use std::process::exit;
 use std::sync::Arc;
@@ -7,6 +8,7 @@ use log::{error, info};
 use crate::config::database::DatabaseTrait;
 use crate::config::redis::RedisTrait;
 use crate::config::{database, redis, session};
+use crate::service::auth::AuthBackend;
 
 pub mod config;
 mod dto;
@@ -34,12 +36,18 @@ async fn main() {
             error!("\n[Database Connection Failed]\n数据库连接失败，请检查配置是否正确、网络连接情况和数据库端配置\n\n{}",e);
             panic()
         });
+    let db_conn = Arc::new(db_conn);
 
     // Session层
     let redis_session = session::RedisSession::init().await.unwrap_or_else(|e| {
         error!("\n[Redis Connection Failed]\nRedis连接失败，请检查配置是否正确、网络连接情况和服务端配置\n\n{}",e);
         panic()
     });
+
+    // 验证层
+    let auth_backend = AuthBackend::new(&db_conn);
+    let auth_layer =
+        AuthManagerLayerBuilder::new(auth_backend, redis_session.session_layer).build();
 
     let host: String;
     {
@@ -58,12 +66,15 @@ async fn main() {
             panic()
         });
     info!("应用即将启动");
-    axum::serve(listener, routes::root::routes(Arc::new(db_conn)))
-        .await
-        .unwrap_or_else(|e| {
-            error!("\n[Http server inner error]\nHTTP服务器内部错误\n\n{}", e);
-            panic()
-        });
+    axum::serve(
+        listener,
+        routes::root::routes(Arc::clone(&db_conn), auth_layer),
+    )
+    .await
+    .unwrap_or_else(|e| {
+        error!("\n[Http server inner error]\nHTTP服务器内部错误\n\n{}", e);
+        panic()
+    });
 
     redis_session.conn_handle.await.unwrap().unwrap();
 }

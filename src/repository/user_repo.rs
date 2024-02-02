@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use crate::config::database::{DatabaseTrait, Db};
 use crate::entity::student::Student;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct UserRepository {
     pub(crate) db_conn: Arc<Db>,
 }
@@ -20,7 +20,7 @@ pub trait UserRepositoryTrait {
 impl UserRepositoryTrait for UserRepository {
     fn new(db_conn: &Arc<Db>) -> Self {
         Self {
-            db_conn: Arc::clone(db_conn)
+            db_conn: Arc::clone(db_conn),
         }
     }
 

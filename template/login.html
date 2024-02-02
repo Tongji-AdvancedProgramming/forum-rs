@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>请登录系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" rel="stylesheet"
+          crossorigin="anonymous">
+    <link href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css" rel="stylesheet" crossorigin="anonymous"/>
+</head>
+<body>
+<div class="container">
+    <form class="form-signin" method="post" action="/login">
+        <h2 class="form-signin-heading">请登录</h2>
+
+        <div class="my-4">
+            <p>
+                这是论坛后端的登录页面，供开发使用。
+            </p>
+
+            <p class="small">
+                如果你误入此处，说明我们的系统出问题了。
+            </p>
+
+            <p class="small">
+                你也许正在使用浏览器调试我们的API，又或者你正在开发爬虫或者别的什么东西。Anyway，这里没有什么好藏的，请访问吧。
+            </p>
+
+            <!--            <p class="small">-->
+            <!--                还有：如果你需要我们的API文档，可以在登录之后访问这个端点（生产版本中可能需要加上/api或者其他前缀）：<a href="/swagger-ui/index.html#/">/swagger-ui/index.html</a>-->
+            <!--            </p>-->
+
+            <p class="small">
+                我们的登录接口需要验证图形验证码，这是为了防止你把你的自动程序拿去售卖，或者做一些学习范畴以外的事情。对爬虫爱好者，你只需要手动登录，
+                然后把Cookies复制进爬虫程序就可以了。Session的有效期足够你用。
+            </p>
+        </div>
+
+        <p>
+            <label for="username" class="sr-only">学号</label>
+            <input type="text" id="username" name="username" class="form-control" placeholder="学号" required autofocus>
+        </p>
+        <p>
+            <label for="password" class="sr-only">密码</label>
+            <input type="password" id="password" name="password" class="form-control" placeholder="密码" required>
+        </p>
+<!--        <p style="display: flex;gap: 0.5em">-->
+<!--            <label for="code" class="sr-only">验证码</label>-->
+<!--            <input type="text" id="code" name="code" class="form-control" placeholder="验证码" required>-->
+<!--            <img src="/captcha" width="130px" height="48px" alt=""/>-->
+<!--        </p>-->
+        <button class="btn btn-lg btn-primary btn-block" type="submit">登录</button>
+    </form>
+    <div style="display: flex">
+        <div style="flex-grow: 1"></div>
+        <div class="alert alert-danger mt-5" role="alert" style="width: 400px">
+            <p><b>郑重提示！</b></p>
+            <p>
+                出于个人的、学习的、非侵入的目的，使用系统的接口，我原则上是不反对的。
+                但是你应当谨慎调用，切勿滥用，否则可能会被封禁账号、上报教师，滥用接口
+                对系统造成严重破坏的，教师可能会上报学院/学校。请君自重。
+            </p>
+            <p style="text-align: right">———— Cinea 2023.10.9</p>
+        </div>
+        <div style="flex-grow: 1"></div>
+    </div>
+</div>
+</body>
+</html>

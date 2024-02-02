@@ -28,3 +28,6 @@ axum-login = "0.13.1"
 fred = "8.0.1"
 anyhow = "1.0.79"
 time = "0.3.32"
+md-5 = "0.10.6"
+easy-hex = "1.0.0"
+askama = { version = "0.12.1", features = ["with-axum"] }

@@ -1,17 +1,21 @@
+use crate::error::auth_error::AuthError;
+use crate::error::param_error::ParameterError;
 use axum::response::{IntoResponse, Response};
 use thiserror::Error;
-use crate::error::param_error::ParameterError;
 
 #[derive(Error, Debug)]
 pub enum ApiError {
     #[error(transparent)]
     ParameterError(#[from] ParameterError),
+    #[error(transparent)]
+    AuthError(#[from] AuthError),
 }
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         match self {
             ApiError::ParameterError(error) => error.into_response(),
+            ApiError::AuthError(error) => error.into_response(),
         }
     }
 }

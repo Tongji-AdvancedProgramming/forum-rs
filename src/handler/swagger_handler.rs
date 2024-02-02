@@ -4,6 +4,7 @@ use utoipa::OpenApi;
 #[openapi(
     paths(
         super::user_handler::info,
+
     ),
     components(
         schemas(

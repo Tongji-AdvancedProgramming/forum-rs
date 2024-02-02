@@ -5,6 +5,7 @@ use log::error;
 use serde::Deserialize;
 use sqlx::mysql::{MySqlConnectOptions, MySqlPoolOptions};
 use sqlx::{Database, Error, MySql, Pool};
+use std::fmt::{Debug, Formatter};
 use std::str::FromStr;
 
 #[derive(Default, Debug, Deserialize, Eq, PartialEq)]
@@ -16,6 +17,12 @@ pub struct DatabaseConfig {
 
 pub struct Db {
     pool: Pool<MySql>,
+}
+
+impl Debug for Db {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Db").finish()
+    }
 }
 
 #[async_trait]
