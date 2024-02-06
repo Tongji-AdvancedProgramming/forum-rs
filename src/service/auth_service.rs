@@ -1,7 +1,7 @@
 use crate::config::database::Db;
 use crate::config::permission::PermissionConfig;
 use crate::config::{get_config, permission};
-use crate::entity::student::Student;
+use crate::entity::student::Model as Student;
 use crate::repository::user_repo::{UserRepository, UserRepositoryTrait};
 use async_trait::async_trait;
 use axum_login::{AuthUser, AuthnBackend, AuthzBackend, UserId};
@@ -9,6 +9,7 @@ use easy_hex::Hex;
 use md5::{Digest, Md5};
 use serde::Deserialize;
 use std::collections::HashSet;
+use std::error::Error;
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use utoipa::ToSchema;
@@ -38,6 +39,7 @@ impl AuthUser for Student {
 pub struct Credentials {
     pub username: String,
     pub password: String,
+    pub code: String,
 }
 
 #[derive(Debug, Clone)]
@@ -71,7 +73,7 @@ impl AuthBackend {
 impl AuthnBackend for AuthBackend {
     type User = Student;
     type Credentials = Credentials;
-    type Error = sqlx::Error;
+    type Error = sea_orm::error::RuntimeErr;
 
     async fn authenticate(
         &self,

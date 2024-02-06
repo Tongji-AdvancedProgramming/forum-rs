@@ -1,5 +1,7 @@
+use axum::ServiceExt;
 use axum_login::AuthManagerLayerBuilder;
 use fred::interfaces::ClientLike;
+use std::net::SocketAddr;
 use std::process::exit;
 use std::sync::Arc;
 
@@ -10,7 +12,7 @@ use tower_sessions::{Expiry, SessionManagerLayer};
 use crate::config::database::DatabaseTrait;
 use crate::config::redis::RedisTrait;
 use crate::config::{database, redis, session};
-use crate::service::auth::AuthBackend;
+use crate::service::auth_service::AuthBackend;
 
 pub mod config;
 mod dto;
@@ -79,7 +81,7 @@ async fn main() {
     info!("应用即将启动");
     axum::serve(
         listener,
-        routes::root::routes(Arc::clone(&db_conn), auth_layer),
+        routes::root::routes(Arc::clone(&db_conn), Arc::clone(&redis_conn), auth_layer),
     )
     .await
     .unwrap_or_else(|e| {

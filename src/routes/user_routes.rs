@@ -1,6 +1,6 @@
 use crate::config::permission::Permission;
 use crate::handler::user_handler;
-use crate::service::auth::AuthBackend;
+use crate::service::auth_service::AuthBackend;
 use crate::state::user_state::UserState;
 use axum::routing::get;
 use axum::Router;

@@ -10,8 +10,8 @@ use utoipa::OpenApi;
     components(
         schemas(
             crate::response::api_response::ApiResponse,
-            crate::entity::student::Student,
-            crate::service::auth::Credentials,
+            crate::entity::student::Model,
+            crate::service::auth_service::Credentials,
         )
     ),
     tags(

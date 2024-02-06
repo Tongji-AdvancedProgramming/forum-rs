@@ -1,1 +1,9 @@
+pub mod course;
+pub mod homework;
+pub mod log_login;
+pub mod log_post;
+pub mod post;
 pub mod student;
+pub mod student_info;
+pub mod tag;
+pub mod term;

@@ -10,13 +10,22 @@ pub enum AuthError {
     WrongUsernameOrPassword,
     #[error("内部错误，验证失败")]
     AuthFailed,
+    #[error("验证码不正确")]
+    CaptchaWrong,
+    #[error("未提供验证码")]
+    CaptchaMissing,
+    #[error("验证码生成失败")]
+    CaptchaGenerateFailed,
 }
 
 impl IntoResponse for AuthError {
     fn into_response(self) -> Response {
         let status_code = match self {
             AuthError::WrongUsernameOrPassword => (StatusCode::UNAUTHORIZED, 4000),
-            AuthError::AuthFailed => (StatusCode::INTERNAL_SERVER_ERROR, 5000),
+            AuthError::CaptchaMissing | AuthError::CaptchaWrong => (StatusCode::FORBIDDEN, 4003),
+            AuthError::AuthFailed | AuthError::CaptchaGenerateFailed => {
+                (StatusCode::INTERNAL_SERVER_ERROR, 5000)
+            }
         };
 
         let response: ApiResponse = ApiResponse {

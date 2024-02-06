@@ -2,8 +2,7 @@ use std::collections::HashMap;
 
 use axum::extract::{Query, State};
 
-
-use crate::entity::student::Student;
+use crate::entity::student;
 use crate::error::api_error::ApiError;
 use crate::error::param_error::ParameterError;
 use crate::response::api_response::ApiResponse;
@@ -14,7 +13,7 @@ use crate::state::user_state::UserState;
     path = "/user/info",
     tag = "User",
     responses(
-        (status = 200, description = "查询学生成功", body = inline(Student)),
+        (status = 200, description = "查询学生成功", body = inline(student::Model)),
         (status = NOT_FOUND, description = "查询学生失败")
     ),
     params(
@@ -24,7 +23,7 @@ use crate::state::user_state::UserState;
 pub async fn info(
     State(state): State<UserState>,
     Query(params): Query<HashMap<String, String>>,
-) -> Result<ApiResponse<Student>, ApiError> {
+) -> Result<ApiResponse<student::Model>, ApiError> {
     let id: Option<&String> = params.get("id");
 
     if id.is_none() {

@@ -3,6 +3,9 @@ name = "forum"
 version = "0.1.0"
 edition = "2021"
 
+[profile.dev.package.sqlx-macros]
+opt-level = 3
+
 [dependencies]
 axum = { version = "0.7.4" }
 config = "0.13.4"
@@ -10,7 +13,7 @@ env_logger = "0.11.1"
 lazy_static = "1.4.0"
 log = "0.4.20"
 serde = { version = "1.0.196", features = ["derive"] }
-sqlx = { version = "0.7.3", features = ["runtime-tokio-native-tls", "mysql", "sqlx-mysql", "chrono"] }
+#sqlx = { version = "0.7.3", features = ["runtime-tokio-native-tls", "mysql", "sqlx-mysql", "chrono"] }
 tokio = { version = "1.35.1", features = ["full"] }
 async-trait = "0.1.77"
 tracing = "0.1"
@@ -32,3 +35,11 @@ easy-hex = "1.0.0"
 askama = { version = "0.12.1", features = ["with-axum"] }
 askama_axum = "0.4.0"
 serde_json = "1.0.113"
+easy-captcha = { version = "0.1.1", features = ["axum-tower-sessions"] }
+axum-client-ip = "0.5.0"
+axum-macros = "0.4.1"
+sea-orm = { version = "0.12", features = [ "macros", "runtime-tokio-native-tls", "chrono", "debug-print", "sqlx-mysql" ] }
+
+[build-dependencies]
+toml = { version = "0.8.9" }
+log = { version = "0.4.20" }
