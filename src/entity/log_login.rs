@@ -3,7 +3,7 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 /// 用户登录日志表
-#[derive(Debug, Clone, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "log_login")]
 #[serde(rename_all = "camelCase")]
 pub struct Model {

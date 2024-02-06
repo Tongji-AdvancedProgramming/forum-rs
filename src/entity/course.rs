@@ -2,7 +2,7 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 /// 课程信息表
-#[derive(Debug, Clone, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "course")]
 #[serde(rename_all = "camelCase")]
 pub struct Model {

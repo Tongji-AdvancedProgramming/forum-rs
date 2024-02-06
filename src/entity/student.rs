@@ -2,7 +2,7 @@ use chrono::NaiveDateTime;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Deserialize, Serialize, utoipa::ToSchema, DeriveEntityModel)]
+#[derive(Clone, Deserialize, Default, Serialize, utoipa::ToSchema, DeriveEntityModel)]
 #[sea_orm(table_name = "student")]
 #[serde(rename_all = "camelCase")]
 pub struct Model {
