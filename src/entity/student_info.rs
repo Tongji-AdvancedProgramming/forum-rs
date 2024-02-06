@@ -2,7 +2,7 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 /// 论坛运行所需要的其他数据
-#[derive(Debug, Clone, Deserialize, Serialize, DeriveEntityModel)]
+#[derive(Debug, Clone, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "student_info")]
 #[serde(rename_all = "camelCase")]
 pub struct Model {

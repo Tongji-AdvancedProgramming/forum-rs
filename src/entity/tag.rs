@@ -2,7 +2,7 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 /// 标签名称索引表
-#[derive(Debug, Clone, Deserialize, Serialize, DeriveEntityModel)]
+#[derive(Debug, Clone, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "tag")]
 #[serde(rename_all = "camelCase")]
 pub struct Model {
