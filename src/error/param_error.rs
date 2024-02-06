@@ -1,11 +1,11 @@
-use axum::http::StatusCode;
-use axum::Json;
-use axum::response::{IntoResponse, Response};
-use thiserror::Error;
 use crate::response::api_response::ApiResponse;
+use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
+use axum::Json;
+use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum ParameterError{
+pub enum ParameterError {
     #[error("未传入必须的参数：{0}")]
     MissingParameter(String),
 
@@ -17,10 +17,16 @@ pub enum ParameterError{
 impl IntoResponse for ParameterError {
     fn into_response(self) -> Response {
         let status_code = match self {
-            ParameterError::MissingParameter(_) | ParameterError::InvalidParameter(_) => (StatusCode::BAD_REQUEST, 4000)
+            ParameterError::MissingParameter(_) | ParameterError::InvalidParameter(_) => {
+                (StatusCode::BAD_REQUEST, 4000)
+            }
         };
 
-        let response: ApiResponse = ApiResponse {code: status_code.1, message: self.to_string(), data: None};
+        let response: ApiResponse = ApiResponse {
+            code: status_code.1,
+            message: self.to_string(),
+            data: None,
+        };
 
         (status_code.0, Json(response)).into_response()
     }

@@ -23,6 +23,7 @@ mod response;
 mod routes;
 mod service;
 mod state;
+pub mod utils;
 
 fn panic() -> ! {
     exit(1);
