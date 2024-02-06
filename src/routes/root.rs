@@ -1,9 +1,8 @@
 use axum::extract::connect_info::IntoMakeServiceWithConnectInfo;
-use axum::handler::HandlerWithoutStateExt;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use axum::routing::{get, IntoMakeService};
+use axum::routing::get;
 use axum::Router;
 use axum_client_ip::SecureClientIpSource;
 use axum_login::{login_required, AuthManagerLayer};

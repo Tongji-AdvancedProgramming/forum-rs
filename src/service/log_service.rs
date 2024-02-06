@@ -1,9 +1,8 @@
 use crate::config::database::Db;
 use crate::repository::log_repo::{LogRepository, LogRepositoryTrait};
 use async_trait::async_trait;
-use chrono::{Local, NaiveDateTime, Utc};
-use log::{debug, info};
-use sea_orm::prelude::DateTime;
+use chrono::Local;
+use log::debug;
 use std::net::IpAddr;
 use std::sync::Arc;
 

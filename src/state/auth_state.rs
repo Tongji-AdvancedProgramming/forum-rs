@@ -1,5 +1,4 @@
 use crate::config::database::Db;
-use crate::config::redis::Redis;
 use crate::service::log_service::LogService;
 use std::sync::Arc;
 

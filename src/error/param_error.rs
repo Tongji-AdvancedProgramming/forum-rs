@@ -9,6 +9,7 @@ pub enum ParameterError{
     #[error("未传入必须的参数：{0}")]
     MissingParameter(String),
 
+    #[allow(dead_code)]
     #[error("参数值无效：{0}")]
     InvalidParameter(String),
 }

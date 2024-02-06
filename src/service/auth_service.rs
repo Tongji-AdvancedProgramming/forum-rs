@@ -9,7 +9,6 @@ use easy_hex::Hex;
 use md5::{Digest, Md5};
 use serde::Deserialize;
 use std::collections::HashSet;
-use std::error::Error;
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use utoipa::ToSchema;
