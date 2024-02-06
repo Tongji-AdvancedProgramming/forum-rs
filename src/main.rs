@@ -19,6 +19,7 @@ mod dto;
 mod entity;
 mod error;
 mod handler;
+pub mod middleware;
 mod repository;
 mod response;
 mod routes;

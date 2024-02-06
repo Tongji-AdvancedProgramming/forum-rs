@@ -1,4 +1,5 @@
 use crate::error::auth_error::AuthError;
+use crate::error::limit_error::LimitError;
 use crate::error::param_error::ParameterError;
 use axum::response::{IntoResponse, Response};
 use thiserror::Error;
@@ -9,6 +10,8 @@ pub enum ApiError {
     ParameterError(#[from] ParameterError),
     #[error(transparent)]
     AuthError(#[from] AuthError),
+    #[error(transparent)]
+    LimitError(#[from] LimitError),
 }
 
 impl IntoResponse for ApiError {
@@ -16,6 +19,7 @@ impl IntoResponse for ApiError {
         match self {
             ApiError::ParameterError(error) => error.into_response(),
             ApiError::AuthError(error) => error.into_response(),
+            ApiError::LimitError(error) => error.into_response(),
         }
     }
 }

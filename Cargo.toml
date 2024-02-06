@@ -39,6 +39,7 @@ easy-captcha = { version = "0.1.1", features = ["axum-tower-sessions"] }
 axum-client-ip = "0.5.0"
 axum-macros = "0.4.1"
 sea-orm = { version = "0.12", features = [ "macros", "runtime-tokio-native-tls", "chrono", "debug-print", "sqlx-mysql" ] }
+parking_lot = "0.12.1"
 
 [build-dependencies]
 toml = { version = "0.8.9" }

@@ -19,6 +19,7 @@ use crate::handler::swagger_handler::ApiDoc;
 use crate::routes::{auth_routes, user_routes};
 use crate::service::auth_service::AuthBackend;
 use crate::state::auth_state::AuthState;
+use crate::state::limit_state::LimitState;
 use crate::state::user_state::UserState;
 
 pub fn routes(
@@ -29,11 +30,12 @@ pub fn routes(
     let merged_router = {
         let user_state = UserState::new(&db_conn);
         let auth_state = AuthState::new(&db_conn);
+        let limit_state = LimitState::new(&redis);
 
         Router::new()
             .nest("/user", user_routes::routes().with_state(user_state))
             .route_layer(login_required!(AuthBackend))
-            .merge(auth_routes::routes().with_state(auth_state))
+            .merge(auth_routes::routes(limit_state).with_state(auth_state))
             .route(
                 "/",
                 get(|| async {

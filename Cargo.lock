@@ -1217,6 +1217,7 @@ dependencies = [
  "lazy_static",
  "log",
  "md-5",
+ "parking_lot",
  "sea-orm",
  "serde",
  "serde_json",
