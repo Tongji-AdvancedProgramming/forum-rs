@@ -1,7 +1,5 @@
-use axum::ServiceExt;
 use axum_login::AuthManagerLayerBuilder;
 use fred::interfaces::ClientLike;
-use std::net::SocketAddr;
 use std::process::exit;
 use std::sync::Arc;
 

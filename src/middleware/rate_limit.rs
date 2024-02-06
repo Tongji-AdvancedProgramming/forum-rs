@@ -5,9 +5,7 @@ use axum::extract::{Request, State};
 use axum::middleware::Next;
 use axum::response::Response;
 use axum_client_ip::SecureClientIp;
-use axum_macros::debug_handler;
-use chrono::{Duration, Local, NaiveDateTime};
-use fred::interfaces::{KeysInterface, ListInterface, RedisResult};
+use fred::interfaces::{KeysInterface, RedisResult};
 use fred::prelude::Expiration;
 use log::warn;
 
@@ -28,7 +26,7 @@ pub async fn rate_limit_middleware(
                 .set(
                     &key,
                     lt.unwrap_or(0) + 1,
-                    Some(Expiration::EX(60)),
+                    Some(Expiration::EX(6)),
                     None,
                     false,
                 )

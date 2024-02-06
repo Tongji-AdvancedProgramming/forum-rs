@@ -1,5 +1,3 @@
-use log::{info, warn};
-use std::cmp::min;
 use std::env;
 use std::error::Error;
 use std::fs::File;

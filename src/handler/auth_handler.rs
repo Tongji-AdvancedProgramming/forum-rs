@@ -135,6 +135,6 @@ pub mod get {
         CaptchaUtil::<GifCaptcha>::new()
             .out(&session)
             .await
-            .map_err(|err| ApiError::AuthError(AuthError::CaptchaGenerateFailed))
+            .map_err(|_| ApiError::AuthError(AuthError::CaptchaGenerateFailed))
     }
 }

@@ -4,7 +4,6 @@ use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use serde::Deserialize;
 use std::error::Error;
 use std::fmt::{Debug, Formatter};
-use std::str::FromStr;
 use std::time::Duration;
 
 #[derive(Default, Debug, Deserialize, Eq, PartialEq)]
