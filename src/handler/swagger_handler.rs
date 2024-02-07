@@ -19,6 +19,7 @@ use utoipa::OpenApi;
             crate::entity::course::Model,
             crate::service::auth_service::Credentials,
             crate::dto::board::Board,
+            crate::dto::course_tree::CourseTree,
         )
     ),
     tags(

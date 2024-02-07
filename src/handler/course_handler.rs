@@ -1,4 +1,7 @@
-use crate::{entity::course, error::api_error::ApiError, response::api_response::ApiResponse};
+use crate::{
+    dto::course_tree::CourseTree, entity::course, error::api_error::ApiError,
+    response::api_response::ApiResponse,
+};
 
 use super::AuthSession;
 
@@ -61,11 +64,11 @@ pub async fn get_my_course_codes(
     path = "/course/tree",
     tag = "Course",
     responses(
-        (status = 200, description = "获取课程成功", body = inline(course::Model))
+        (status = 200, description = "获取课程成功", body = inline(CourseTree))
     ),
 )]
 pub async fn get_course_tree(
     _auth_session: AuthSession,
-) -> Result<ApiResponse<course::Model>, ApiError> {
+) -> Result<ApiResponse<CourseTree>, ApiError> {
     unimplemented!()
 }

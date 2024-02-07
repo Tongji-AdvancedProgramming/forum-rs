@@ -1,2 +1,2 @@
 pub mod board;
-pub mod student_short_info;
+pub mod course_tree;
