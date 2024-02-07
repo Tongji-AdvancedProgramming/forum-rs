@@ -7,11 +7,16 @@ use utoipa::OpenApi;
         super::auth_handler::post::login,
         super::auth_handler::get::logout,
         super::board_handler::get_board_info,
+        super::course_handler::get_my_courses,
+        super::course_handler::get_my_courses_detail,
+        super::course_handler::get_my_course_codes,
+        super::course_handler::get_course_tree,
     ),
     components(
         schemas(
             crate::response::api_response::ApiResponse,
             crate::entity::student::Model,
+            crate::entity::course::Model,
             crate::service::auth_service::Credentials,
             crate::dto::board::Board,
         )
@@ -20,6 +25,7 @@ use utoipa::OpenApi;
         (name = "User", description = "用户相关API"),
         (name = "Auth", description = "登录、验证相关API"),
         (name = "Board", description = "板块相关API"),
+        (name = "Course", description = "课程相关API"),
     )
 )]
 pub struct ApiDoc;

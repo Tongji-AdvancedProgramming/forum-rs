@@ -31,7 +31,7 @@ impl IntoResponse for ApiError {
 }
 
 impl From<DbErr> for ApiError {
-    fn from(value: DbErr) -> Self {
+    fn from(_value: DbErr) -> Self {
         Self::DbError(DbError::SeaOrmDatabaseError)
     }
 }

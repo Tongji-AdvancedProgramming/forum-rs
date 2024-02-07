@@ -11,7 +11,7 @@ pub enum DbError {
 }
 
 impl From<DbErr> for DbError {
-    fn from(value: DbErr) -> Self {
+    fn from(_value: DbErr) -> Self {
         DbError::SeaOrmDatabaseError
     }
 }
