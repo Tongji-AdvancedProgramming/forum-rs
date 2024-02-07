@@ -1286,6 +1286,7 @@ dependencies = [
  "either",
  "env_logger",
  "fred",
+ "futures",
  "lazy_static",
  "log",
  "md-5",

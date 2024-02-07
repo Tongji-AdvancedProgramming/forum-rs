@@ -46,6 +46,7 @@ sea-orm = { version = "0.12", features = [
 ] }
 parking_lot = "0.12.1"
 moka = { version = "0.12.5", features = ["future"] }
+futures = "0.3.30"
 
 [build-dependencies]
 toml = { version = "0.8.9" }
