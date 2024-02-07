@@ -4,7 +4,7 @@ pub mod permission;
 pub mod redis;
 pub mod session;
 
-use crate::config::app_config::{AppConfig, APP_CONFIG};
+pub use crate::config::app_config::{AppConfig, APP_CONFIG};
 pub use app_config::init;
 use std::sync::{Arc, RwLock};
 

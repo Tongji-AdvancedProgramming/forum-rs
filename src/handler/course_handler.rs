@@ -13,12 +13,12 @@ use super::AuthSession;
     path = "/course/my-course",
     tag = "Course",
     responses(
-        (status = 200, description = "获取课程成功", body = inline(Vec<Vec<String>>))
+        (status = 200, description = "获取课程成功", body = inline(Vec<(String, String)>))
     ),
 )]
 pub async fn get_my_courses(
     _auth_session: AuthSession,
-) -> Result<ApiResponse<Vec<Vec<String>>>, ApiError> {
+) -> Result<ApiResponse<Vec<(String, String)>>, ApiError> {
     unimplemented!()
 }
 
@@ -47,12 +47,12 @@ pub async fn get_my_courses_detail(
     path = "/course/my-course-code",
     tag = "Course",
     responses(
-        (status = 200, description = "获取课程成功", body = inline(Vec<Vec<String>>))
+        (status = 200, description = "获取课程成功", body = inline(Vec<(String, String)>))
     ),
 )]
 pub async fn get_my_course_codes(
     _auth_session: AuthSession,
-) -> Result<ApiResponse<Vec<Vec<String>>>, ApiError> {
+) -> Result<ApiResponse<Vec<(String, String)>>, ApiError> {
     unimplemented!()
 }
 
