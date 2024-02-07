@@ -6,7 +6,7 @@ use std::error::Error;
 use std::fmt::{Debug, Formatter};
 use std::time::Duration;
 
-#[derive(Default, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Default, Debug, Clone, Deserialize, Eq, PartialEq)]
 pub struct DatabaseConfig {
     pub url: String,
     pub username: String,

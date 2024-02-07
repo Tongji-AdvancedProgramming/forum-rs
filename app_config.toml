@@ -13,8 +13,8 @@ password = "rememberus1nthed@yofend"
 
 # Redis连接信息
 [redis]
-#url = "redis://:rememberus@10.80.42.189/13"
-url = "redis://:rememberus@127.0.0.1/13"
+url = "redis://:rememberus@10.80.42.189/13"
+# url = "redis://:rememberus@127.0.0.1/13"
 
 # 权限对应用户等级
 [permission]

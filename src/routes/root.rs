@@ -14,6 +14,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use crate::config::database::Db;
 use crate::config::redis::Redis;
 
+use crate::config::APP_CONFIG;
 use crate::handler::swagger_handler::ApiDoc;
 use crate::routes::{auth_routes, user_routes};
 use crate::service::auth_service::AuthBackend;
@@ -30,10 +31,16 @@ pub fn routes(
     redis: Arc<Redis>,
     auth_layer: AuthManagerLayer<AuthBackend, impl SessionStore + Clone>,
 ) -> IntoMakeServiceWithConnectInfo<Router, SocketAddr> {
+    let app_config = {
+        let config = APP_CONFIG.clone();
+        let guard = config.read().unwrap();
+        Arc::new((*guard).clone())
+    };
+
     let merged_router = {
         let auth_state = AuthState::new(&db_conn);
         let board_state = BoardState::new(&db_conn);
-        let course_state = CourseState::new();
+        let course_state = CourseState::new(&db_conn, &app_config);
         let limit_state = LimitState::new(&redis);
         let user_state = UserState::new(&db_conn);
 

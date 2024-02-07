@@ -1,6 +1,10 @@
+use axum::extract::State;
+use axum_login::AuthUser;
+
 use crate::{
     dto::course_tree::CourseTree, entity::course, error::api_error::ApiError,
-    response::api_response::ApiResponse,
+    response::api_response::ApiResponse, service::course_service::CourseServiceTrait,
+    state::course_state::CourseState,
 };
 
 use super::AuthSession;
@@ -17,9 +21,14 @@ use super::AuthSession;
     ),
 )]
 pub async fn get_my_courses(
-    _auth_session: AuthSession,
+    State(state): State<CourseState>,
+    auth_session: AuthSession,
 ) -> Result<ApiResponse<Vec<(String, String)>>, ApiError> {
-    unimplemented!()
+    let id = auth_session.user.unwrap().id();
+    Ok(ApiResponse::send(Ok(state
+        .course_service
+        .get_user_courses(&id)
+        .await?)))
 }
 
 /// 当前用户拥有访问权的课程详情
@@ -34,9 +43,14 @@ pub async fn get_my_courses(
     ),
 )]
 pub async fn get_my_courses_detail(
-    _auth_session: AuthSession,
+    State(state): State<CourseState>,
+    auth_session: AuthSession,
 ) -> Result<ApiResponse<Vec<course::Model>>, ApiError> {
-    unimplemented!()
+    let id = auth_session.user.unwrap().id();
+    Ok(ApiResponse::send(Ok(state
+        .course_service
+        .get_user_courses_detail(&id)
+        .await?)))
 }
 
 /// 当前用户拥有访问权的课程代码
@@ -51,9 +65,14 @@ pub async fn get_my_courses_detail(
     ),
 )]
 pub async fn get_my_course_codes(
-    _auth_session: AuthSession,
+    State(state): State<CourseState>,
+    auth_session: AuthSession,
 ) -> Result<ApiResponse<Vec<(String, String)>>, ApiError> {
-    unimplemented!()
+    let id = auth_session.user.unwrap().id();
+    Ok(ApiResponse::send(Ok(state
+        .course_service
+        .get_user_course_codes(&id)
+        .await?)))
 }
 
 /// 获取课程树
@@ -68,7 +87,12 @@ pub async fn get_my_course_codes(
     ),
 )]
 pub async fn get_course_tree(
-    _auth_session: AuthSession,
+    State(state): State<CourseState>,
+    auth_session: AuthSession,
 ) -> Result<ApiResponse<CourseTree>, ApiError> {
-    unimplemented!()
+    let id = auth_session.user.unwrap().id();
+    Ok(ApiResponse::send(Ok(state
+        .course_service
+        .get_user_courses_tree(&id)
+        .await?)))
 }

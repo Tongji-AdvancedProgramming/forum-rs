@@ -1,10 +1,8 @@
-use askama::filters::format;
 use async_trait::async_trait;
 use futures::future::ready;
 use futures::{stream, StreamExt};
 use moka::future::{Cache, CacheBuilder};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
-use serde_json::to_string;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
@@ -29,7 +27,7 @@ pub trait CourseServiceTrait {
     async fn get_user_courses(&self, user_id: &str) -> Result<Vec<(String, String)>, DbError>;
 
     /// 获取用户有权查看的课程详情
-    async fn get_user_course_detail(&self, user_id: &str) -> Result<Vec<course::Model>, DbError>;
+    async fn get_user_courses_detail(&self, user_id: &str) -> Result<Vec<course::Model>, DbError>;
 
     /// 获取用户有权查看的课程及其以树形式的详细信息
     async fn get_user_courses_tree(&self, user_id: &str) -> Result<CourseTree, DbError>;
@@ -120,7 +118,7 @@ impl CourseService {
             });
 
         // 构造返回数据
-        week_homework_map
+        let result = week_homework_map
             .into_iter()
             .map(|(week_index, homework)| {
                 let chapters: Vec<_> = homework
@@ -143,7 +141,7 @@ impl CourseService {
             })
             .collect();
 
-        todo!()
+        Ok(result)
     }
 }
 
@@ -224,7 +222,7 @@ impl CourseServiceTrait for CourseService {
         }
     }
 
-    async fn get_user_course_detail(&self, user_id: &str) -> Result<Vec<Model>, DbError> {
+    async fn get_user_courses_detail(&self, user_id: &str) -> Result<Vec<Model>, DbError> {
         let keys = self.get_user_courses(user_id).await?;
 
         self.course_repo.get_all_course_detail(keys).await

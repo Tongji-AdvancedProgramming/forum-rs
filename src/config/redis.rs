@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use fred::prelude::*;
 use serde::Deserialize;
 
-#[derive(Default, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Default, Debug, Clone, Deserialize, Eq, PartialEq)]
 pub struct RedisAppConfig {
     pub url: String,
 }

@@ -12,7 +12,7 @@ use serde::Deserialize;
 
 use crate::panic;
 
-#[derive(Default, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Default, Debug, Clone, Deserialize, Eq, PartialEq)]
 pub struct AppConfig {
     pub port: u16,
     pub database: DatabaseConfig,
