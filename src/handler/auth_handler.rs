@@ -7,7 +7,6 @@ pub mod post {
     use axum_login::AuthSession;
     use easy_captcha::extension::axum_tower_sessions::CaptchaAxumTowerSessionStaticExt;
     use easy_captcha::extension::CaptchaUtil;
-    use either::Left;
     use tower_sessions::Session;
 
     use crate::error::auth_error::AuthError;
@@ -61,7 +60,7 @@ pub mod post {
                 return Err(AuthError::AuthFailed);
             }
 
-            Ok(ApiResponse::send(Left(None::<i32>)).into_response())
+            Ok(ApiResponse::send(Ok(None::<i32>)).into_response())
         };
 
         let agent = headers
@@ -103,7 +102,6 @@ pub mod get {
     use easy_captcha::extension::axum_tower_sessions::CaptchaAxumTowerSessionExt;
     use easy_captcha::extension::CaptchaUtil;
     use easy_captcha::NewCaptcha;
-    use either::Left;
     use tower_sessions::Session;
 
     #[derive(Template)]
@@ -126,7 +124,7 @@ pub mod get {
     )]
     pub async fn logout(mut auth_session: AuthSession<AuthBackend>) -> impl IntoResponse {
         match auth_session.logout().await {
-            Ok(_) => ApiResponse::send(Left(None::<i32>)).into_response(),
+            Ok(_) => ApiResponse::send(Ok(None::<i32>)).into_response(),
             Err(_) => AuthError::AuthFailed.into_response(),
         }
     }

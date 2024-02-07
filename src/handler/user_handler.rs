@@ -33,7 +33,7 @@ pub async fn info(
     }
 
     match state.user_service.get_by_id(&id.unwrap()).await {
-        Some(user) => Ok(ApiResponse::send(either::Left(user))),
-        None => Ok(ApiResponse::send(either::Right("用户Id不存在"))),
+        Some(user) => Ok(ApiResponse::send(Ok(user))),
+        None => Ok(ApiResponse::send(Err("用户Id不存在"))),
     }
 }

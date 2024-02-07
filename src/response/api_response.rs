@@ -1,7 +1,6 @@
 use axum::http::StatusCode;
-use axum::Json;
 use axum::response::{IntoResponse, Response};
-use either::Either;
+use axum::Json;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, utoipa::ToSchema)]
@@ -12,22 +11,27 @@ pub struct ApiResponse<T: Serialize = i32> {
 }
 
 impl<T: Serialize> ApiResponse<T>
-    where
-        T: Serialize,
+where
+    T: Serialize,
 {
-    pub(crate) fn send(data: Either<T, &str>) -> Self {
+    pub(crate) fn send(data: Result<T, &str>) -> Self {
         match data {
-            Either::Left(data) => ApiResponse { code: 10000, message: String::from("成功"), data: Some(data) },
-            Either::Right(message) => ApiResponse { code: 5000, message: String::from(message), data: None }
+            Ok(data) => ApiResponse {
+                code: 10000,
+                message: String::from("成功"),
+                data: Some(data),
+            },
+            Err(message) => ApiResponse {
+                code: 5000,
+                message: String::from(message),
+                data: None,
+            },
         }
     }
 }
 
 impl<T: Serialize> IntoResponse for ApiResponse<T> {
     fn into_response(self) -> Response {
-        (
-            StatusCode::OK,
-            Json(self)
-        ).into_response()
+        (StatusCode::OK, Json(self)).into_response()
     }
 }
