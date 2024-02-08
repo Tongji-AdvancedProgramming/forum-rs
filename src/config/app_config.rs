@@ -12,12 +12,15 @@ use serde::Deserialize;
 
 use crate::panic;
 
+use super::s3::S3Config;
+
 #[derive(Default, Debug, Clone, Deserialize, Eq, PartialEq)]
 pub struct AppConfig {
     pub port: u16,
     pub database: DatabaseConfig,
     pub redis: RedisAppConfig,
     pub permission: PermissionConfig,
+    pub s3: S3Config,
 }
 
 pub type AppConf = Arc<RwLock<AppConfig>>;

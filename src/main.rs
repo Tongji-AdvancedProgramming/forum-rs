@@ -9,7 +9,7 @@ use tower_sessions::{Expiry, SessionManagerLayer};
 
 use crate::config::database::DatabaseTrait;
 use crate::config::redis::RedisTrait;
-use crate::config::{database, redis, session};
+use crate::config::{database, redis, s3, session};
 use crate::service::auth_service::AuthBackend;
 
 pub mod config;
@@ -52,6 +52,11 @@ async fn main() {
         panic()
     });
 
+    let s3_client = Arc::new(s3::S3::init().unwrap_or_else(|e| {
+        error!("\n[S3 Client Configurate Failed]\nS3客户端初始化失败，请检查配置是否正确、网络连接情况和服务端配置\n\n{}",e);
+        panic()
+    }));
+
     // Session层
     let session_store = session::RedisSession::new(&redis_conn);
     let session_layer = SessionManagerLayer::new(session_store)
@@ -81,7 +86,12 @@ async fn main() {
     info!("应用即将启动");
     axum::serve(
         listener,
-        routes::root::routes(Arc::clone(&db_conn), Arc::clone(&redis_conn), auth_layer),
+        routes::root::routes(
+            Arc::clone(&db_conn),
+            Arc::clone(&redis_conn),
+            Arc::clone(&s3_client),
+            auth_layer,
+        ),
     )
     .await
     .unwrap_or_else(|e| {
