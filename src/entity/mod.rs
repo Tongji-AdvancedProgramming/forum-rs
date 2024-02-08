@@ -1,5 +1,6 @@
 pub mod course;
 pub mod homework;
+pub mod homework_uploaded;
 pub mod log_login;
 pub mod log_post;
 pub mod post;
