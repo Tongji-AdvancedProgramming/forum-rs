@@ -228,27 +228,6 @@ impl CourseServiceTrait for CourseService {
         self.course_repo.get_all_course_detail(keys).await
     }
 
-    async fn get_courses(&self, keys: &Vec<(String, String)>) -> Result<Vec<Model>, DbError> {
-        let mut result = vec![];
-
-        for key in keys {
-            if !self.course_cache.contains_key(key) {
-                let course = self.course_repo.get_course_detail(key).await?;
-                if course.is_some() {
-                    self.course_cache
-                        .insert(key.clone(), course.as_ref().unwrap().clone())
-                        .await;
-                    result.push(course.unwrap());
-                }
-            } else {
-                let course = self.course_cache.get(key).await.unwrap();
-                result.push(course);
-            }
-        }
-
-        Ok(result)
-    }
-
     async fn get_user_courses_tree(&self, user_id: &str) -> Result<CourseTree, DbError> {
         // 获取所有可以访问的课程
         let course_keys = self.get_user_courses(user_id).await?;
@@ -290,6 +269,27 @@ impl CourseServiceTrait for CourseService {
                 courses_stream
             },
         };
+
+        Ok(result)
+    }
+
+    async fn get_courses(&self, keys: &Vec<(String, String)>) -> Result<Vec<Model>, DbError> {
+        let mut result = vec![];
+
+        for key in keys {
+            if !self.course_cache.contains_key(key) {
+                let course = self.course_repo.get_course_detail(key).await?;
+                if course.is_some() {
+                    self.course_cache
+                        .insert(key.clone(), course.as_ref().unwrap().clone())
+                        .await;
+                    result.push(course.unwrap());
+                }
+            } else {
+                let course = self.course_cache.get(key).await.unwrap();
+                result.push(course);
+            }
+        }
 
         Ok(result)
     }

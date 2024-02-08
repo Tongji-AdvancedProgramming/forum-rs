@@ -39,10 +39,11 @@ impl HomeworkRepositoryTrait for HomeworkRepository {
     async fn get_homework(&self, term: &str, id: &str) -> Result<Option<homework::Model>, DbError> {
         use homework::Column as Col;
 
-        Ok(homework::Entity::find()
+        homework::Entity::find()
             .filter(Col::HwTerm.eq(term).and(Col::HwId.eq(id)))
             .one(self.db_conn.get_db())
-            .await?)
+            .await
+            .map_err(DbError::from)
     }
 
     async fn get_homework_uploaded_by_week(
