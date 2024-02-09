@@ -39,7 +39,7 @@ pub struct Model {
     //  如果是发帖,则为NULL
     //  <p>
     //  如果是回帖,则为对应帖子的post_id(以此为依据构建发帖回帖的树形结构)
-    pub post_answer_id: i32,
+    pub post_answer_id: Option<i32>,
 
     /// 帖子类型('Question':首发问题 'QuestionsAdditional':追问 'Answer':回帖 'Other':其它 '/':预留)
     //  <p>
@@ -87,10 +87,10 @@ pub struct Model {
     pub post_tag_10: String,
 
     /// 帖子标题
-    pub post_title: String,
+    pub post_title: Option<String>,
 
     /// 发帖具体内容(允许贴图,Richtext?)
-    pub post_content: String,
+    pub post_content: Option<String>,
 
     /// 发帖时间
     pub post_date: NaiveDateTime,
@@ -99,7 +99,7 @@ pub struct Model {
     pub post_is_del: String,
 
     /// 备注(预留)
-    pub post_comment: String,
+    pub post_comment: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

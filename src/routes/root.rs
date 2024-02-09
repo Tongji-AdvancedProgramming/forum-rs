@@ -14,7 +14,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use crate::config::database::Db;
 use crate::config::redis::Redis;
 
-use crate::config::s3::S3;
+use crate::config::s3::S3Conn;
 use crate::config::APP_CONFIG;
 use crate::handler::swagger_handler::ApiDoc;
 use crate::routes::{auth_routes, user_routes};
@@ -30,7 +30,7 @@ use super::{board_routes, course_routes};
 pub fn routes(
     db_conn: Arc<Db>,
     redis: Arc<Redis>,
-    s3_client: Arc<S3>,
+    s3_client: Arc<S3Conn>,
     auth_layer: AuthManagerLayer<AuthBackend, impl SessionStore + Clone>,
 ) -> IntoMakeServiceWithConnectInfo<Router, SocketAddr> {
     let app_config = {

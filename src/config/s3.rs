@@ -21,11 +21,12 @@ pub struct S3PrefixConfig {
     pub homework_upload: String,
 }
 
-pub struct S3 {
+pub struct S3Conn {
     pub client: client::Client,
+    pub config: S3Config,
 }
 
-impl S3 {
+impl S3Conn {
     pub fn init() -> Result<Self, Box<dyn Error + Send + Sync>> {
         let config = crate::config::get_config();
         let guard = config.read().unwrap();

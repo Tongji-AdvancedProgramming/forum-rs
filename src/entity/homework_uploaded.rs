@@ -41,7 +41,7 @@ pub struct Model {
     pub hwup_is_del: String,
 
     /// 备注
-    pub hwup_comment: String,
+    pub hwup_comment: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

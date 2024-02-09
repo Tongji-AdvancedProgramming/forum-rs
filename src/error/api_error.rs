@@ -5,7 +5,7 @@ use axum::response::{IntoResponse, Response};
 use sea_orm::DbErr;
 use thiserror::Error;
 
-use super::db_error::DbError;
+use super::proc_error::ProcessError;
 
 #[derive(Error, Debug)]
 pub enum ApiError {
@@ -16,7 +16,7 @@ pub enum ApiError {
     #[error(transparent)]
     LimitError(#[from] LimitError),
     #[error(transparent)]
-    DbError(#[from] DbError),
+    ProcessError(#[from] ProcessError),
 }
 
 impl IntoResponse for ApiError {
@@ -25,13 +25,20 @@ impl IntoResponse for ApiError {
             ApiError::ParameterError(error) => error.into_response(),
             ApiError::AuthError(error) => error.into_response(),
             ApiError::LimitError(error) => error.into_response(),
-            ApiError::DbError(error) => error.into_response(),
+            ApiError::ProcessError(error) => error.into_response(),
         }
     }
 }
 
 impl From<DbErr> for ApiError {
     fn from(_value: DbErr) -> Self {
-        Self::DbError(DbError::SeaOrmDatabaseError)
+        Self::ProcessError(ProcessError::SeaOrmDatabaseError)
+    }
+}
+
+use minio::s3::error::Error as MinioErr;
+impl From<MinioErr> for ApiError {
+    fn from(_: MinioErr) -> Self {
+        Self::ProcessError(ProcessError::MinioError)
     }
 }

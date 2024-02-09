@@ -6,7 +6,7 @@ use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter};
 use crate::{
     config::database::{DatabaseTrait, Db},
     entity::course,
-    error::db_error::DbError,
+    error::proc_error::ProcessError,
 };
 
 #[allow(dead_code)]
@@ -26,7 +26,7 @@ impl CourseRepository {
 
 #[async_trait]
 pub trait CourseRepositoryTrait {
-    async fn get_all_course_detail<T, U>(&self, keys: T) -> Result<U, DbError>
+    async fn get_all_course_detail<T, U>(&self, keys: T) -> Result<U, ProcessError>
     where
         T: IntoIterator<Item = (String, String)> + Send + Sync,
         U: FromIterator<course::Model> + Send + Sync;
@@ -34,12 +34,12 @@ pub trait CourseRepositoryTrait {
     async fn get_course_detail(
         &self,
         key: &(String, String),
-    ) -> Result<Option<course::Model>, DbError>;
+    ) -> Result<Option<course::Model>, ProcessError>;
 }
 
 #[async_trait]
 impl CourseRepositoryTrait for CourseRepository {
-    async fn get_all_course_detail<T, U>(&self, keys: T) -> Result<U, DbError>
+    async fn get_all_course_detail<T, U>(&self, keys: T) -> Result<U, ProcessError>
     where
         T: IntoIterator<Item = (String, String)> + Send + Sync,
         U: FromIterator<course::Model> + Send + Sync,
@@ -64,7 +64,7 @@ impl CourseRepositoryTrait for CourseRepository {
     async fn get_course_detail(
         &self,
         key: &(String, String),
-    ) -> Result<Option<course::Model>, DbError> {
+    ) -> Result<Option<course::Model>, ProcessError> {
         let (term, course_no) = key;
         let course = course::Entity::find()
             .filter(course::Column::CourseTerm.eq(term))

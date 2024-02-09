@@ -1,14 +1,17 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use minio::s3::types::S3;
+use minio::s3::args::StatObjectArgs;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 
 use crate::{
-    config::database::{DatabaseTrait, Db},
+    config::{
+        database::{DatabaseTrait, Db},
+        s3::S3Conn,
+    },
     dto::board::PostLocation,
     entity::{homework, homework_uploaded},
-    error::{api_error::ApiError, db_error::DbError},
+    error::{api_error::ApiError, proc_error::ProcessError},
     repository::homework_repo::{HomeworkRepository, HomeworkRepositoryTrait},
     service::board_service::BoardServiceTrait,
 };
@@ -22,7 +25,7 @@ pub trait HomeworkServiceTrait {
         term: &str,
         id: &str,
         course_no: &str,
-    ) -> Result<Option<homework::Model>, DbError>;
+    ) -> Result<Option<homework::Model>, ProcessError>;
 
     async fn get_homework_uploaded(
         &self,
@@ -33,19 +36,19 @@ pub trait HomeworkServiceTrait {
     async fn post_homework(
         &self,
         homework_uploaded: &homework_uploaded::Model,
-    ) -> Result<String, DbError>;
+    ) -> Result<String, ProcessError>;
 }
 
 #[derive(Clone)]
 pub struct HomeWorkService {
-    pub s3_client: Arc<S3>,
+    pub s3_client: Arc<S3Conn>,
     pub db_conn: Arc<Db>,
     pub board_service: BoardService,
     pub homework_repository: HomeworkRepository,
 }
 
 impl HomeWorkService {
-    pub fn new(s3_client: &Arc<S3>, db_conn: &Arc<Db>) -> Self {
+    pub fn new(s3_client: &Arc<S3Conn>, db_conn: &Arc<Db>) -> Self {
         Self {
             s3_client: Arc::clone(s3_client),
             db_conn: Arc::clone(db_conn),
@@ -62,7 +65,7 @@ impl HomeworkServiceTrait for HomeWorkService {
         term: &str,
         id: &str,
         course_no: &str,
-    ) -> Result<Option<homework::Model>, DbError> {
+    ) -> Result<Option<homework::Model>, ProcessError> {
         use homework::Column as Col;
 
         homework::Entity::find()
@@ -71,7 +74,7 @@ impl HomeworkServiceTrait for HomeWorkService {
             .filter(Col::HwCourseCode.eq(course_no))
             .one(self.db_conn.get_db())
             .await
-            .map_err(DbError::from)
+            .map_err(ProcessError::from)
     }
 
     async fn get_homework_uploaded(
@@ -98,8 +101,27 @@ impl HomeworkServiceTrait for HomeWorkService {
 
     async fn post_homework(
         &self,
-        _homework_uploaded: &homework_uploaded::Model,
-    ) -> Result<String, DbError> {
+        homework_uploaded: &homework_uploaded::Model,
+    ) -> Result<String, ProcessError> {
+        // 出现文件名时，检查正确性，并下载内容并计算MD5
+        if !homework_uploaded.hwup_filename.is_empty() {
+            let object_name: String = if homework_uploaded.hwup_filename.starts_with("forum/") {
+                String::from(&homework_uploaded.hwup_filename[5..])
+            } else {
+                String::from(&homework_uploaded.hwup_filename)
+            };
+
+            let stat = self
+                .s3_client
+                .client
+                .stat_object(&StatObjectArgs {
+                    bucket: &self.s3_client.config.bucket,
+                    object: &object_name,
+                    ..Default::default()
+                })
+                .await?;
+        }
+
         todo!()
     }
 }

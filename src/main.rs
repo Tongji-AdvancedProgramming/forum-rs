@@ -52,7 +52,7 @@ async fn main() {
         panic()
     });
 
-    let s3_client = Arc::new(s3::S3::init().unwrap_or_else(|e| {
+    let s3_client = Arc::new(s3::S3Conn::init().unwrap_or_else(|e| {
         error!("\n[S3 Client Configurate Failed]\nS3客户端初始化失败，请检查配置是否正确、网络连接情况和服务端配置\n\n{}",e);
         panic()
     }));

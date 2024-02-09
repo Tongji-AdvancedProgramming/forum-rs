@@ -13,7 +13,7 @@ use crate::config::AppConfig;
 use crate::dto::course_tree::{CourseTree, Week};
 use crate::entity::course::Model;
 use crate::entity::{homework, student};
-use crate::error::db_error::DbError;
+use crate::error::proc_error::ProcessError;
 use crate::repository::course_repo::{CourseRepository, CourseRepositoryTrait};
 use crate::repository::user_repo::{UserRepository, UserRepositoryTrait};
 use crate::{dto::course_tree, entity::course};
@@ -21,29 +21,35 @@ use crate::{dto::course_tree, entity::course};
 #[async_trait]
 pub trait CourseServiceTrait {
     /// 获取用户有权查看的课程代码列表
-    async fn get_user_course_codes(&self, user_id: &str) -> Result<Vec<(String, String)>, DbError>;
+    async fn get_user_course_codes(
+        &self,
+        user_id: &str,
+    ) -> Result<Vec<(String, String)>, ProcessError>;
 
     /// 获取用户有权查看的课程列表
-    async fn get_user_courses(&self, user_id: &str) -> Result<Vec<(String, String)>, DbError>;
+    async fn get_user_courses(&self, user_id: &str) -> Result<Vec<(String, String)>, ProcessError>;
 
     /// 获取用户有权查看的课程详情
-    async fn get_user_courses_detail(&self, user_id: &str) -> Result<Vec<course::Model>, DbError>;
+    async fn get_user_courses_detail(
+        &self,
+        user_id: &str,
+    ) -> Result<Vec<course::Model>, ProcessError>;
 
     /// 获取用户有权查看的课程及其以树形式的详细信息
-    async fn get_user_courses_tree(&self, user_id: &str) -> Result<CourseTree, DbError>;
+    async fn get_user_courses_tree(&self, user_id: &str) -> Result<CourseTree, ProcessError>;
 
     /// 获取某门课程的数据
     async fn get_courses(
         &self,
         keys: &Vec<(String, String)>,
-    ) -> Result<Vec<course::Model>, DbError>;
+    ) -> Result<Vec<course::Model>, ProcessError>;
 
     /// 获取某门课程的周次数据
     async fn get_weeks(
         &self,
         term: &str,
         courses_code: &str,
-    ) -> Result<Vec<course_tree::Week>, DbError>;
+    ) -> Result<Vec<course_tree::Week>, ProcessError>;
 }
 
 #[allow(dead_code)]
@@ -102,7 +108,11 @@ impl CourseService {
         result
     }
 
-    async fn get_weeks_loads(&self, term: &str, course_code: &str) -> Result<Vec<Week>, DbError> {
+    async fn get_weeks_loads(
+        &self,
+        term: &str,
+        course_code: &str,
+    ) -> Result<Vec<Week>, ProcessError> {
         // 获取原始数据
         let data = homework::Entity::find()
             .filter(homework::Column::HwTerm.eq(term))
@@ -147,7 +157,10 @@ impl CourseService {
 
 #[async_trait]
 impl CourseServiceTrait for CourseService {
-    async fn get_user_course_codes(&self, user_id: &str) -> Result<Vec<(String, String)>, DbError> {
+    async fn get_user_course_codes(
+        &self,
+        user_id: &str,
+    ) -> Result<Vec<(String, String)>, ProcessError> {
         let stu: Option<student::Model> = self.user_repo.select_courses(user_id).await;
         if stu.is_none() {
             return Ok(vec![]);
@@ -182,11 +195,11 @@ impl CourseServiceTrait for CourseService {
         }
     }
 
-    async fn get_user_courses(&self, user_id: &str) -> Result<Vec<(String, String)>, DbError> {
+    async fn get_user_courses(&self, user_id: &str) -> Result<Vec<(String, String)>, ProcessError> {
         if self.user_course_cache.contains_key(user_id) {
             Ok(self.user_course_cache.get(user_id).await.unwrap().clone())
         } else {
-            let result: Result<Vec<(String, String)>, DbError> = {
+            let result: Result<Vec<(String, String)>, ProcessError> = {
                 let stu: Option<student::Model> = self.user_repo.select_courses(user_id).await;
                 if stu.is_none() {
                     return Ok(vec![]);
@@ -222,13 +235,13 @@ impl CourseServiceTrait for CourseService {
         }
     }
 
-    async fn get_user_courses_detail(&self, user_id: &str) -> Result<Vec<Model>, DbError> {
+    async fn get_user_courses_detail(&self, user_id: &str) -> Result<Vec<Model>, ProcessError> {
         let keys = self.get_user_courses(user_id).await?;
 
         self.course_repo.get_all_course_detail(keys).await
     }
 
-    async fn get_user_courses_tree(&self, user_id: &str) -> Result<CourseTree, DbError> {
+    async fn get_user_courses_tree(&self, user_id: &str) -> Result<CourseTree, ProcessError> {
         // 获取所有可以访问的课程
         let course_keys = self.get_user_courses(user_id).await?;
         // 获取完整的可访问的课程列表
@@ -261,7 +274,7 @@ impl CourseServiceTrait for CourseService {
                             .await?;
                         Ok(course)
                     })
-                    .collect::<Vec<Result<course_tree::Course, DbError>>>()
+                    .collect::<Vec<Result<course_tree::Course, ProcessError>>>()
                     .await
                     .into_iter()
                     .collect::<Result<Vec<_>, _>>()?;
@@ -273,7 +286,7 @@ impl CourseServiceTrait for CourseService {
         Ok(result)
     }
 
-    async fn get_courses(&self, keys: &Vec<(String, String)>) -> Result<Vec<Model>, DbError> {
+    async fn get_courses(&self, keys: &Vec<(String, String)>) -> Result<Vec<Model>, ProcessError> {
         let mut result = vec![];
 
         for key in keys {
@@ -294,7 +307,7 @@ impl CourseServiceTrait for CourseService {
         Ok(result)
     }
 
-    async fn get_weeks(&self, term: &str, courses_code: &str) -> Result<Vec<Week>, DbError> {
+    async fn get_weeks(&self, term: &str, courses_code: &str) -> Result<Vec<Week>, ProcessError> {
         if self
             .week_cache
             .contains_key(&(term.to_string(), courses_code.to_string()))

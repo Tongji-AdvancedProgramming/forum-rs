@@ -6,7 +6,7 @@ use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use crate::{
     config::database::{DatabaseTrait, Db},
     entity::{homework, homework_uploaded},
-    error::db_error::DbError,
+    error::proc_error::ProcessError,
 };
 
 #[derive(Debug, Clone)]
@@ -24,26 +24,34 @@ impl HomeworkRepository {
 
 #[async_trait]
 pub trait HomeworkRepositoryTrait {
-    async fn get_homework(&self, term: &str, id: &str) -> Result<Option<homework::Model>, DbError>;
+    async fn get_homework(
+        &self,
+        term: &str,
+        id: &str,
+    ) -> Result<Option<homework::Model>, ProcessError>;
     async fn get_homework_uploaded_by_week(
         &self,
         term: &str,
         course_code: &str,
         week: i32,
         with_hidden: bool,
-    ) -> Result<Vec<homework_uploaded::Model>, DbError>;
+    ) -> Result<Vec<homework_uploaded::Model>, ProcessError>;
 }
 
 #[async_trait]
 impl HomeworkRepositoryTrait for HomeworkRepository {
-    async fn get_homework(&self, term: &str, id: &str) -> Result<Option<homework::Model>, DbError> {
+    async fn get_homework(
+        &self,
+        term: &str,
+        id: &str,
+    ) -> Result<Option<homework::Model>, ProcessError> {
         use homework::Column as Col;
 
         homework::Entity::find()
             .filter(Col::HwTerm.eq(term).and(Col::HwId.eq(id)))
             .one(self.db_conn.get_db())
             .await
-            .map_err(DbError::from)
+            .map_err(ProcessError::from)
     }
 
     async fn get_homework_uploaded_by_week(
@@ -52,7 +60,7 @@ impl HomeworkRepositoryTrait for HomeworkRepository {
         course_code: &str,
         week: i32,
         with_hidden: bool,
-    ) -> Result<Vec<homework_uploaded::Model>, DbError> {
+    ) -> Result<Vec<homework_uploaded::Model>, ProcessError> {
         use homework_uploaded::Column as Col;
 
         let mut filter = Col::HwupTerm
@@ -68,6 +76,6 @@ impl HomeworkRepositoryTrait for HomeworkRepository {
             .filter(filter)
             .all(self.db_conn.get_db())
             .await
-            .map_err(DbError::from)
+            .map_err(ProcessError::from)
     }
 }
