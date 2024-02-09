@@ -10,6 +10,8 @@ pub enum ProcessError {
     SeaOrmDatabaseError,
     #[error("Minio执行错误")]
     MinioError,
+    #[error("{0}")]
+    GeneralError(String),
 }
 
 impl From<DbErr> for ProcessError {
@@ -27,6 +29,6 @@ impl From<MinioErr> for ProcessError {
 
 impl IntoResponse for ProcessError {
     fn into_response(self) -> Response {
-        (StatusCode::INTERNAL_SERVER_ERROR, "系统内部错误").into_response()
+        (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()).into_response()
     }
 }

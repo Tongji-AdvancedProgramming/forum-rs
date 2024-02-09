@@ -2,7 +2,10 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use minio::s3::args::StatObjectArgs;
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, Condition, EntityTrait, PaginatorTrait, QueryFilter,
+    TransactionTrait,
+};
 
 use crate::{
     config::{
@@ -35,8 +38,8 @@ pub trait HomeworkServiceTrait {
 
     async fn post_homework(
         &self,
-        homework_uploaded: &homework_uploaded::Model,
-    ) -> Result<String, ProcessError>;
+        homework_uploaded: homework_uploaded::Model,
+    ) -> Result<(), ProcessError>;
 }
 
 #[derive(Clone)]
@@ -101,8 +104,10 @@ impl HomeworkServiceTrait for HomeWorkService {
 
     async fn post_homework(
         &self,
-        homework_uploaded: &homework_uploaded::Model,
-    ) -> Result<String, ProcessError> {
+        homework_uploaded: homework_uploaded::Model,
+    ) -> Result<(), ProcessError> {
+        let mut homework_uploaded = homework_uploaded;
+
         // 出现文件名时，检查正确性，并下载内容并计算MD5
         if !homework_uploaded.hwup_filename.is_empty() {
             let object_name: String = if homework_uploaded.hwup_filename.starts_with("forum/") {
@@ -119,9 +124,37 @@ impl HomeworkServiceTrait for HomeWorkService {
                     object: &object_name,
                     ..Default::default()
                 })
-                .await?;
+                .await
+                .map_err(|_| {
+                    ProcessError::GeneralError(
+                        "无法从存储系统中寻找到文件，请检查文件名填写是否正确".into(),
+                    )
+                })?;
+            homework_uploaded.hwup_file_md5 = stat.etag;
         }
 
-        todo!()
+        use homework_uploaded::Column as Col;
+        let filter = Condition::all()
+            .add(Col::HwupTerm.eq(&homework_uploaded.hwup_term))
+            .add(Col::HwupCourseCode.eq(&homework_uploaded.hwup_course_code))
+            .add(Col::HwupId.eq(&homework_uploaded.hwup_id));
+
+        let db = self.db_conn.get_db();
+
+        let txn = db.begin().await?;
+        let hw: homework_uploaded::ActiveModel = homework_uploaded.into();
+        match homework_uploaded::Entity::find()
+            .filter(filter)
+            .count(db)
+            .await?
+        {
+            0 => hw.insert(db).await?,
+            _ => {
+                hw.reset_all();
+                hw.update(db).await?
+            }
+        };
+
+        Ok(())
     }
 }
