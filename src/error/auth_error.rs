@@ -1,7 +1,6 @@
 use crate::response::api_response::ApiResponse;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
-use axum::Json;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -21,19 +20,13 @@ pub enum AuthError {
 impl IntoResponse for AuthError {
     fn into_response(self) -> Response {
         let status_code = match self {
-            AuthError::WrongUsernameOrPassword => (StatusCode::UNAUTHORIZED, 4000),
-            AuthError::CaptchaMissing | AuthError::CaptchaWrong => (StatusCode::FORBIDDEN, 4003),
+            AuthError::WrongUsernameOrPassword => StatusCode::UNAUTHORIZED,
+            AuthError::CaptchaMissing | AuthError::CaptchaWrong => StatusCode::FORBIDDEN,
             AuthError::AuthFailed | AuthError::CaptchaGenerateFailed => {
-                (StatusCode::INTERNAL_SERVER_ERROR, 5000)
+                StatusCode::INTERNAL_SERVER_ERROR
             }
         };
 
-        let response: ApiResponse = ApiResponse {
-            code: status_code.1,
-            message: self.to_string(),
-            data: None,
-        };
-
-        (status_code.0, Json(response)).into_response()
+        ApiResponse::err_with_code(self, status_code).into_response()
     }
 }

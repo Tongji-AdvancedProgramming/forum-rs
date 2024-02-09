@@ -4,6 +4,8 @@ use sea_orm::DbErr;
 
 use thiserror::Error;
 
+use crate::response::api_response::ApiResponse;
+
 #[derive(Error, Debug)]
 pub enum ProcessError {
     #[error("ORM框架报数据库错误")]
@@ -29,6 +31,6 @@ impl From<MinioErr> for ProcessError {
 
 impl IntoResponse for ProcessError {
     fn into_response(self) -> Response {
-        (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()).into_response()
+        ApiResponse::err_with_code(self, StatusCode::INTERNAL_SERVER_ERROR).into_response()
     }
 }
