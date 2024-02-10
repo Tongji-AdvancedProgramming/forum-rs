@@ -94,11 +94,11 @@ impl AuthzBackend for AuthBackend {
 
     async fn get_user_permissions(
         &self,
-        _user: &Self::User,
+        user: &Self::User,
     ) -> Result<HashSet<Self::Permission>, Self::Error> {
         let mut permission_set: HashSet<Self::Permission> = Default::default();
 
-        let level: i32 = _user.stu_user_level.parse().unwrap_or(0);
+        let level: i32 = user.stu_user_level.parse().unwrap_or(0);
         if level >= self.permission_config.admin {
             permission_set.insert(Self::Permission::ADMIN);
         }

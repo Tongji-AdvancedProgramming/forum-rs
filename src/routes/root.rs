@@ -22,10 +22,11 @@ use crate::service::auth_service::AuthBackend;
 use crate::state::auth_state::AuthState;
 use crate::state::board_state::BoardState;
 use crate::state::course_state::CourseState;
+use crate::state::homework_state::HomeworkState;
 use crate::state::limit_state::LimitState;
 use crate::state::user_state::UserState;
 
-use super::{board_routes, course_routes};
+use super::{board_routes, course_routes, homework_routes};
 
 pub fn routes(
     db_conn: Arc<Db>,
@@ -43,6 +44,7 @@ pub fn routes(
         let auth_state = AuthState::new(&db_conn);
         let board_state = BoardState::new(&db_conn);
         let course_state = CourseState::new(&db_conn, &app_config);
+        let homework_state = HomeworkState::new(&db_conn, &s3_client, &app_config);
         let limit_state = LimitState::new(&redis);
         let user_state = UserState::new(&db_conn);
 
@@ -50,6 +52,10 @@ pub fn routes(
             .nest("/user", user_routes::routes().with_state(user_state))
             .nest("/board", board_routes::routes().with_state(board_state))
             .nest("/course", course_routes::routes().with_state(course_state))
+            .nest(
+                "/homework",
+                homework_routes::routes().with_state(homework_state),
+            )
             .route_layer(login_required!(AuthBackend))
             .merge(auth_routes::routes(limit_state).with_state(auth_state))
             .route(

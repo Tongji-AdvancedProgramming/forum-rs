@@ -77,6 +77,7 @@ pub mod post {
                     AuthError::CaptchaWrong => "验证码错误",
                     AuthError::CaptchaMissing => "无验证码",
                     AuthError::CaptchaGenerateFailed => "验证码生成失败",
+                    _ => "",
                 },
             }
         };

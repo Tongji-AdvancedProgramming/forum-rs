@@ -29,14 +29,14 @@ pub async fn info(
 
     if id.is_none() {
         return Err(ApiError::ParameterError(ParameterError::MissingParameter(
-            "id".to_string(),
+            "id",
         )));
     }
 
     match state.user_service.get_by_id(&id.unwrap()).await {
         Some(user) => Ok(ApiResponse::ok(user)),
         None => Err(ApiError::ProcessError(ProcessError::GeneralError(
-            "用户Id不存在".into(),
+            "用户Id不存在",
         ))),
     }
 }

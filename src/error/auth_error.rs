@@ -15,13 +15,17 @@ pub enum AuthError {
     CaptchaMissing,
     #[error("验证码生成失败")]
     CaptchaGenerateFailed,
+    #[error("拒绝访问：{0}")]
+    PermissionDenied(&'static str),
 }
 
 impl IntoResponse for AuthError {
     fn into_response(self) -> Response {
         let status_code = match self {
             AuthError::WrongUsernameOrPassword => StatusCode::UNAUTHORIZED,
-            AuthError::CaptchaMissing | AuthError::CaptchaWrong => StatusCode::FORBIDDEN,
+            AuthError::CaptchaMissing
+            | AuthError::CaptchaWrong
+            | AuthError::PermissionDenied(_) => StatusCode::FORBIDDEN,
             AuthError::AuthFailed | AuthError::CaptchaGenerateFailed => {
                 StatusCode::INTERNAL_SERVER_ERROR
             }

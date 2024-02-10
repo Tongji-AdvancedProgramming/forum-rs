@@ -30,6 +30,7 @@ where
 }
 
 impl ApiResponse {
+    #[allow(dead_code)]
     pub(crate) fn err<E>(error: E) -> Self
     where
         E: Error,

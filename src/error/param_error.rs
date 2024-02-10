@@ -6,11 +6,11 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum ParameterError {
     #[error("未传入必须的参数：{0}")]
-    MissingParameter(String),
+    MissingParameter(&'static str),
 
     #[allow(dead_code)]
     #[error("参数值无效：{0}")]
-    InvalidParameter(String),
+    InvalidParameter(&'static str),
 }
 
 impl IntoResponse for ParameterError {

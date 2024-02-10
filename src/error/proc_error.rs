@@ -13,7 +13,7 @@ pub enum ProcessError {
     #[error("Minio执行错误")]
     MinioError,
     #[error("{0}")]
-    GeneralError(String),
+    GeneralError(&'static str),
 }
 
 impl From<DbErr> for ProcessError {
