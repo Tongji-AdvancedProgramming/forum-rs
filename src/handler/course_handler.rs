@@ -1,9 +1,9 @@
 use axum::extract::State;
 use axum_login::AuthUser;
+use forum_macros::forum_handler;
 
 use crate::{
-    dto::course_tree::CourseTree, entity::course, error::api_error::ApiError,
-    response::api_response::ApiResponse, service::course_service::CourseServiceTrait,
+    dto::course_tree::CourseTree, entity::course, service::course_service::CourseServiceTrait,
     state::course_state::CourseState,
 };
 
@@ -20,15 +20,13 @@ use super::AuthSession;
         (status = 200, description = "获取课程成功", body = inline(Vec<(String, String)>))
     ),
 )]
+#[forum_handler]
 pub async fn get_my_courses(
     State(state): State<CourseState>,
     auth_session: AuthSession,
-) -> Result<ApiResponse<Vec<(String, String)>>, ApiError> {
+) -> Vec<(String, String)> {
     let id = auth_session.user.unwrap().id();
-    Ok(ApiResponse::send(Ok(state
-        .course_service
-        .get_user_courses(&id)
-        .await?)))
+    state.course_service.get_user_courses(&id).await
 }
 
 /// 当前用户拥有访问权的课程详情
@@ -42,15 +40,13 @@ pub async fn get_my_courses(
         (status = 200, description = "获取课程成功", body = inline(Vec<course::Model>))
     ),
 )]
+#[forum_handler]
 pub async fn get_my_courses_detail(
     State(state): State<CourseState>,
     auth_session: AuthSession,
-) -> Result<ApiResponse<Vec<course::Model>>, ApiError> {
+) -> Vec<course::Model> {
     let id = auth_session.user.unwrap().id();
-    Ok(ApiResponse::send(Ok(state
-        .course_service
-        .get_user_courses_detail(&id)
-        .await?)))
+    state.course_service.get_user_courses_detail(&id).await
 }
 
 /// 当前用户拥有访问权的课程代码
@@ -64,15 +60,13 @@ pub async fn get_my_courses_detail(
         (status = 200, description = "获取课程成功", body = inline(Vec<(String, String)>))
     ),
 )]
+#[forum_handler]
 pub async fn get_my_course_codes(
     State(state): State<CourseState>,
     auth_session: AuthSession,
-) -> Result<ApiResponse<Vec<(String, String)>>, ApiError> {
+) -> Vec<(String, String)> {
     let id = auth_session.user.unwrap().id();
-    Ok(ApiResponse::send(Ok(state
-        .course_service
-        .get_user_course_codes(&id)
-        .await?)))
+    state.course_service.get_user_course_codes(&id).await
 }
 
 /// 获取课程树
@@ -86,13 +80,11 @@ pub async fn get_my_course_codes(
         (status = 200, description = "获取课程成功", body = inline(CourseTree))
     ),
 )]
+#[forum_handler]
 pub async fn get_course_tree(
     State(state): State<CourseState>,
     auth_session: AuthSession,
-) -> Result<ApiResponse<CourseTree>, ApiError> {
+) -> CourseTree {
     let id = auth_session.user.unwrap().id();
-    Ok(ApiResponse::send(Ok(state
-        .course_service
-        .get_user_courses_tree(&id)
-        .await?)))
+    state.course_service.get_user_courses_tree(&id).await
 }

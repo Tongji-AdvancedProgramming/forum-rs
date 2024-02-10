@@ -60,7 +60,7 @@ pub mod post {
                 return Err(AuthError::AuthFailed);
             }
 
-            Ok(ApiResponse::send(Ok(None::<i32>)).into_response())
+            Ok(ApiResponse::ok(None::<i32>).into_response())
         };
 
         let agent = headers
@@ -124,7 +124,7 @@ pub mod get {
     )]
     pub async fn logout(mut auth_session: AuthSession<AuthBackend>) -> impl IntoResponse {
         match auth_session.logout().await {
-            Ok(_) => ApiResponse::send(Ok(None::<i32>)).into_response(),
+            Ok(_) => ApiResponse::ok(None::<i32>).into_response(),
             Err(_) => AuthError::AuthFailed.into_response(),
         }
     }

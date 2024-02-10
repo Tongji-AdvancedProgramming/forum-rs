@@ -5,6 +5,7 @@ use axum::extract::{Query, State};
 use crate::entity::student;
 use crate::error::api_error::ApiError;
 use crate::error::param_error::ParameterError;
+use crate::error::proc_error::ProcessError;
 use crate::response::api_response::ApiResponse;
 use crate::state::user_state::UserState;
 
@@ -33,7 +34,9 @@ pub async fn info(
     }
 
     match state.user_service.get_by_id(&id.unwrap()).await {
-        Some(user) => Ok(ApiResponse::send(Ok(user))),
-        None => Ok(ApiResponse::send(Err("用户Id不存在"))),
+        Some(user) => Ok(ApiResponse::ok(user)),
+        None => Err(ApiError::ProcessError(ProcessError::GeneralError(
+            "用户Id不存在".into(),
+        ))),
     }
 }

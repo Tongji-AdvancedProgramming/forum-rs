@@ -19,16 +19,6 @@ impl<T: Serialize> ApiResponse<T>
 where
     T: Serialize,
 {
-    pub(crate) fn send<E>(data: Result<T, E>) -> Self
-    where
-        E: Error,
-    {
-        match data {
-            Ok(data) => Self::ok(data),
-            Err(message) => Self::err(message),
-        }
-    }
-
     pub(crate) fn ok(data: T) -> Self {
         Self {
             status_code: StatusCode::OK,

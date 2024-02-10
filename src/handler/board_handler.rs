@@ -1,9 +1,9 @@
 use axum::extract::{Query, State};
+use forum_macros::forum_handler;
 use serde::Deserialize;
 
 use crate::{
-    dto::board::Board, error::api_error::ApiError, response::api_response::ApiResponse,
-    service::board_service::BoardServiceTrait, state::board_state::BoardState,
+    dto::board::Board, service::board_service::BoardServiceTrait, state::board_state::BoardState,
 };
 
 #[derive(Deserialize)]
@@ -23,10 +23,10 @@ pub struct GetBoardInfoParam {
         ("id" = String, Query, description = "板块的ID"),
     ),
 )]
+#[forum_handler]
 pub async fn get_board_info(
     State(state): State<BoardState>,
     Query(param): Query<GetBoardInfoParam>,
-) -> Result<ApiResponse<Board>, ApiError> {
-    let board = state.board_service.parse_id_and_fetch(&param.id).await?;
-    Ok(ApiResponse::send(Ok(board)))
+) -> Board {
+    state.board_service.parse_id_and_fetch(&param.id).await
 }

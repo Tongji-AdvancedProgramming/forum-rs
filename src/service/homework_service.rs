@@ -142,18 +142,20 @@ impl HomeworkServiceTrait for HomeworkService {
         let db = self.db_conn.get_db();
 
         let txn = db.begin().await?;
-        let hw: homework_uploaded::ActiveModel = homework_uploaded.into();
+        let mut hw: homework_uploaded::ActiveModel = homework_uploaded.into();
         match homework_uploaded::Entity::find()
             .filter(filter)
-            .count(db)
+            .count(&txn)
             .await?
         {
-            0 => hw.insert(db).await?,
+            0 => hw.insert(&txn).await?,
             _ => {
-                hw.reset_all();
-                hw.update(db).await?
+                hw = hw.reset_all();
+                hw.update(&txn).await?
             }
         };
+
+        txn.commit().await?;
 
         Ok(())
     }

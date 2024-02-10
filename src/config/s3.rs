@@ -38,6 +38,9 @@ impl S3Conn {
             .provider(Some(Box::new(credential_provider)))
             .build()?;
 
-        Ok(Self { client })
+        Ok(Self {
+            client,
+            config: guard.s3.clone(),
+        })
     }
 }
