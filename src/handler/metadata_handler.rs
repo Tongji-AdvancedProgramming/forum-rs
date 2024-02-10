@@ -7,6 +7,15 @@ pub mod get {
         state::metadata_state::MetadataState,
     };
 
+    /// 获取标签列表
+    #[utoipa::path(
+        get,
+        path = "/meta/tags",
+        tag = "Metadata",
+        responses(
+            (status = 200, description = "获取标签列表成功", body = inline(Vec<tag::Model>))
+        ),
+    )]
     #[forum_handler]
     pub async fn tags(State(state): State<MetadataState>) -> Vec<tag::Model> {
         state.metadata_service.get_tags().await

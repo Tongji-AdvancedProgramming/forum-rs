@@ -10,13 +10,18 @@ use utoipa::OpenApi;
         super::course_handler::get_my_courses,
         super::course_handler::get_my_courses_detail,
         super::course_handler::get_my_course_codes,
-        super::course_handler::get_course_tree,
+        super::homework_handler::get::homework,
+        super::homework_handler::get::homework_uploaded,
+        super::homework_handler::post::homework_uploaded,
+        super::metadata_handler::get::tags,
     ),
     components(
         schemas(
             crate::response::api_response::ApiResponse,
             crate::entity::student::Model,
             crate::entity::course::Model,
+            crate::entity::homework::Model,
+            crate::entity::homework_uploaded::Model,
             crate::service::auth_service::Credentials,
             crate::dto::board::Board,
             crate::dto::course_tree::CourseTree,
@@ -27,6 +32,8 @@ use utoipa::OpenApi;
         (name = "Auth", description = "登录、验证相关API"),
         (name = "Board", description = "板块相关API"),
         (name = "Course", description = "课程相关API"),
+        (name = "Homework", description = "作业相关API"),
+        (name = "Metadata", description = "元数据相关API"),
     )
 )]
 pub struct ApiDoc;

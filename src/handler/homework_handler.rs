@@ -3,7 +3,7 @@ pub mod get {
     use axum_login::AuthzBackend;
     use forum_macros::forum_handler;
     use serde::Deserialize;
-    use utoipa::ToSchema;
+    use utoipa::{IntoParams, ToSchema};
 
     use crate::{
         config::permission,
@@ -14,7 +14,7 @@ pub mod get {
         state::homework_state::HomeworkState,
     };
 
-    #[derive(Debug, Clone, Deserialize, ToSchema)]
+    #[derive(Debug, Clone, Deserialize, ToSchema, IntoParams)]
     #[serde(rename_all = "camelCase")]
     pub struct HomeworkParam {
         pub term: String,
@@ -22,6 +22,16 @@ pub mod get {
         pub hw_id: i32,
     }
 
+    /// 获取指定作业的信息
+    #[utoipa::path(
+        get,
+        path = "/homework",
+        tag = "Homework",
+        responses(
+            (status = 200, description = "获取作业成功", body = inline(homework::Model))
+        ),
+        params(HomeworkParam),
+    )]
     #[forum_handler]
     pub async fn homework(
         State(state): State<HomeworkState>,
@@ -33,13 +43,23 @@ pub mod get {
             .await
     }
 
-    #[derive(Debug, Clone, Deserialize, ToSchema)]
+    #[derive(Debug, Clone, Deserialize, ToSchema, IntoParams)]
     #[serde(rename_all = "camelCase")]
     pub struct HomeworkUploadedParam {
         pub board_id: String,
         pub with_hidden: bool,
     }
 
+    /// 获取指定板块的已上传作业的信息
+    #[utoipa::path(
+        get,
+        path = "/homework/uploaded",
+        tag = "Homework",
+        responses(
+            (status = 200, description = "获取已上传作业成功", body = inline(homework_uploaded::Model))
+        ),
+        params(HomeworkUploadedParam),
+    )]
     #[forum_handler]
     pub async fn homework_uploaded(
         auth_session: AuthSession,
@@ -75,6 +95,18 @@ pub mod post {
         state::homework_state::HomeworkState,
     };
 
+    /// 添加或更新已上传作业
+    #[utoipa::path(
+        post,
+        path = "/homework/uploaded",
+        tag = "Homework",
+        responses(
+            (status = 200, description = "上传作业成功", body = inline(()))
+        ),
+        request_body(
+            content = homework_uploaded::Model, content_type = "application/json"
+        ),
+    )]
     #[forum_handler]
     pub async fn homework_uploaded(
         State(state): State<HomeworkState>,
