@@ -3,7 +3,7 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 /// 发帖信息表
-#[derive(Debug, Clone, Default, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
+#[derive(Debug, Clone, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "post")]
 #[serde(rename_all = "camelCase")]
 pub struct Model {
@@ -100,6 +100,38 @@ pub struct Model {
 
     /// 备注(预留)
     pub post_comment: Option<String>,
+}
+
+impl Default for Model {
+    fn default() -> Self {
+        Self {
+            post_id: Default::default(),
+            post_term: Default::default(),
+            post_course_code: Default::default(),
+            post_hw_id: Default::default(),
+            post_week: Default::default(),
+            post_chapter: Default::default(),
+            post_answer_id: Default::default(),
+            post_type: Default::default(),
+            post_sender_no: Default::default(),
+            post_priority: "0".into(),
+            post_tag_01: "0".into(),
+            post_tag_02: "0".into(),
+            post_tag_03: "0".into(),
+            post_tag_04: "0".into(),
+            post_tag_05: "0".into(),
+            post_tag_06: "0".into(),
+            post_tag_07: "0".into(),
+            post_tag_08: "0".into(),
+            post_tag_09: "0".into(),
+            post_tag_10: "0".into(),
+            post_title: Default::default(),
+            post_content: Default::default(),
+            post_date: Default::default(),
+            post_is_del: "0".into(),
+            post_comment: Default::default(),
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

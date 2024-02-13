@@ -32,7 +32,7 @@ pub struct Board {
     pub course: Option<course::Model>,
 
     /// 周次
-    pub week: i32,
+    pub week: i8,
 
     /// 所属作业
     pub homework: Option<homework::Model>,

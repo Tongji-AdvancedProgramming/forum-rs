@@ -1,4 +1,4 @@
-workspace = { members = ["forum-macros"] }
+workspace = { members = ["forum-macros", "forum-utils"] }
 [package]
 name = "forum"
 version = "0.1.0"
@@ -50,6 +50,8 @@ moka = { version = "0.12.5", features = ["future"] }
 futures = "0.3.30"
 minio = "0.1.0"
 forum-macros = { path = "./forum-macros" }
+once_cell = "1.19.0"
+meilisearch-sdk = "0.24.3"
 
 [build-dependencies]
 toml = { version = "0.8.9" }

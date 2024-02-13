@@ -33,7 +33,7 @@ pub trait HomeworkRepositoryTrait {
         &self,
         term: &str,
         course_code: &str,
-        week: i32,
+        week: i8,
         with_hidden: bool,
     ) -> Result<Vec<homework_uploaded::Model>, ProcessError>;
 }
@@ -58,7 +58,7 @@ impl HomeworkRepositoryTrait for HomeworkRepository {
         &self,
         term: &str,
         course_code: &str,
-        week: i32,
+        week: i8,
         with_hidden: bool,
     ) -> Result<Vec<homework_uploaded::Model>, ProcessError> {
         use homework_uploaded::Column as Col;

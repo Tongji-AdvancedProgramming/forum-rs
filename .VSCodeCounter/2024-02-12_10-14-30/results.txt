@@ -1,0 +1,137 @@
+Date : 2024-02-12 10:14:30
+Directory : /Users/cineazhan/codelab/67ForumSystemNew/forum-rs
+Total : 88 files,  8818 codes, 260 comments, 1180 blanks, all 10258 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| TOML     |          4 |      4,989 |         12 |        527 |      5,528 |
+| Rust     |         77 |      3,689 |        245 |        646 |      4,580 |
+| XML      |          6 |         78 |          0 |          0 |         78 |
+| HTML     |          1 |         62 |          3 |          7 |         72 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++-------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                            | files      | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                               |         88 |      8,818 |        260 |      1,180 |     10,258 |
+| . (Files)                                                                                       |          4 |      5,015 |         11 |        526 |      5,552 |
+| .idea                                                                                           |          6 |         78 |          0 |          0 |         78 |
+| .idea (Files)                                                                                   |          5 |         50 |          0 |          0 |         50 |
+| .idea/inspectionProfiles                                                                        |          1 |         28 |          0 |          0 |         28 |
+| forum-macros                                                                                    |          2 |         39 |          1 |         12 |         52 |
+| forum-macros (Files)                                                                            |          1 |          9 |          1 |          4 |         14 |
+| forum-macros/src                                                                                |          1 |         30 |          0 |          8 |         38 |
+| src                                                                                             |         75 |      3,624 |        245 |        635 |      4,504 |
+| src (Files)                                                                                     |          1 |         88 |          2 |         14 |        104 |
+| src/config                                                                                      |          8 |        285 |         18 |         59 |        362 |
+| src/dto                                                                                         |          3 |         47 |         12 |         14 |         73 |
+| src/entity                                                                                      |         11 |        285 |        111 |        122 |        518 |
+| src/error                                                                                       |          6 |        146 |          0 |         27 |        173 |
+| src/handler                                                                                     |          8 |        433 |         19 |         50 |        502 |
+| src/middleware                                                                                  |          2 |         46 |          0 |          5 |         51 |
+| src/repository                                                                                  |          6 |        674 |         26 |         82 |        782 |
+| src/response                                                                                    |          2 |         63 |          0 |         10 |         73 |
+| src/routes                                                                                      |          8 |        151 |          0 |         31 |        182 |
+| src/service                                                                                     |         10 |      1,284 |         57 |        191 |      1,532 |
+| src/state                                                                                       |          8 |        108 |          0 |         26 |        134 |
+| src/utils                                                                                       |          2 |         14 |          0 |          4 |         18 |
+| templates                                                                                       |          1 |         62 |          3 |          7 |         72 |
++-------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                                        | language | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/.idea/dataSources.xml                        | XML      |         19 |          0 |          0 |         19 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/.idea/forum.iml                              | XML      |         11 |          0 |          0 |         11 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/.idea/inspectionProfiles/Project_Default.xml | XML      |         28 |          0 |          0 |         28 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/.idea/modules.xml                            | XML      |          8 |          0 |          0 |          8 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/.idea/sqldialects.xml                        | XML      |          6 |          0 |          0 |          6 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/.idea/vcs.xml                                | XML      |          6 |          0 |          0 |          6 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/Cargo.lock                                   | TOML     |      4,915 |          2 |        514 |      5,431 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/Cargo.toml                                   | TOML     |         54 |          1 |          4 |         59 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/app_config.toml                              | TOML     |         11 |          8 |          5 |         24 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/build.rs                                     | Rust     |         35 |          0 |          3 |         38 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/forum-macros/Cargo.toml                      | TOML     |          9 |          1 |          4 |         14 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/forum-macros/src/lib.rs                      | Rust     |         30 |          0 |          8 |         38 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/config/app_config.rs                     | Rust     |         46 |          1 |         10 |         57 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/config/database.rs                       | Rust     |         56 |         17 |         12 |         85 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/config/meili.rs                          | Rust     |         21 |          0 |          6 |         27 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/config/mod.rs                            | Rust     |         13 |          0 |          3 |         16 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/config/permission.rs                     | Rust     |         14 |          0 |          3 |         17 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/config/redis.rs                          | Rust     |         36 |          0 |          9 |         45 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/config/s3.rs                             | Rust     |         38 |          0 |          9 |         47 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/config/session.rs                        | Rust     |         61 |          0 |          7 |         68 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/dto/board.rs                             | Rust     |         20 |         12 |          8 |         40 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/dto/course_tree.rs                       | Rust     |         25 |          0 |          5 |         30 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/dto/mod.rs                               | Rust     |          2 |          0 |          1 |          3 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/entity/course.rs                         | Rust     |         22 |          7 |          9 |         38 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/entity/homework.rs                       | Rust     |         29 |         11 |         13 |         53 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/entity/homework_uploaded.rs              | Rust     |         27 |         11 |         13 |         51 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/entity/log_login.rs                      | Rust     |         18 |          7 |          9 |         34 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/entity/log_post.rs                       | Rust     |         22 |          7 |          9 |         38 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/entity/mod.rs                            | Rust     |         10 |          0 |          1 |         11 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/entity/post.rs                           | Rust     |         74 |         38 |         29 |        141 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/entity/student.rs                        | Rust     |         38 |         19 |         22 |         79 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/entity/student_info.rs                   | Rust     |         14 |          4 |          6 |         24 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/entity/tag.rs                            | Rust     |         19 |          5 |          7 |         31 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/entity/term.rs                           | Rust     |         12 |          2 |          4 |         18 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/error/api_error.rs                       | Rust     |         39 |          0 |          6 |         45 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/error/auth_error.rs                      | Rust     |         33 |          0 |          4 |         37 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/error/limit_error.rs                     | Rust     |         17 |          0 |          4 |         21 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/error/mod.rs                             | Rust     |          5 |          0 |          1 |          6 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/error/param_error.rs                     | Rust     |         22 |          0 |          5 |         27 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/error/proc_error.rs                      | Rust     |         30 |          0 |          7 |         37 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/handler/auth_handler.rs                  | Rust     |        122 |          2 |         16 |        140 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/handler/board_handler.rs                 | Rust     |         28 |          1 |          4 |         33 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/handler/course_handler.rs                | Rust     |         72 |         12 |          7 |         91 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/handler/homework_handler.rs              | Rust     |        108 |          3 |         10 |        121 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/handler/metadata_handler.rs              | Rust     |         20 |          1 |          3 |         24 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/handler/mod.rs                           | Rust     |          8 |          0 |          2 |         10 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/handler/swagger_handler.rs               | Rust     |         38 |          0 |          2 |         40 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/handler/user_handler.rs                  | Rust     |         37 |          0 |          6 |         43 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/main.rs                                  | Rust     |         88 |          2 |         14 |        104 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/middleware/mod.rs                        | Rust     |          1 |          0 |          1 |          2 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/middleware/rate_limit.rs                 | Rust     |         45 |          0 |          4 |         49 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/repository/course_repo.rs                | Rust     |         66 |          0 |         12 |         78 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/repository/homework_repo.rs              | Rust     |         70 |          0 |         12 |         82 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/repository/log_repo.rs                   | Rust     |         44 |          0 |          9 |         53 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/repository/mod.rs                        | Rust     |          5 |          0 |          1 |          6 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/repository/post_repo.rs                  | Rust     |        437 |         26 |         38 |        501 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/repository/user_repo.rs                  | Rust     |         52 |          0 |         10 |         62 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/response/api_response.rs                 | Rust     |         62 |          0 |          9 |         71 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/response/mod.rs                          | Rust     |          1 |          0 |          1 |          2 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/routes/auth_routes.rs                    | Rust     |         17 |          0 |          2 |         19 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/routes/board_routes.rs                   | Rust     |          6 |          0 |          4 |         10 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/routes/course_routes.rs                  | Rust     |         10 |          0 |          4 |         14 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/routes/homework_routes.rs                | Rust     |         17 |          0 |          4 |         21 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/routes/metadata_routes.rs                | Rust     |          6 |          0 |          4 |         10 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/routes/mod.rs                            | Rust     |          7 |          0 |          1 |          8 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/routes/root.rs                           | Rust     |         75 |          0 |         10 |         85 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/routes/user_routes.rs                    | Rust     |         13 |          0 |          2 |         15 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/service/auth_service.rs                  | Rust     |         98 |          0 |         17 |        115 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/service/board_service.rs                 | Rust     |        113 |         10 |         19 |        142 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/service/course_service.rs                | Rust     |        280 |         15 |         40 |        335 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/service/homework_service.rs              | Rust     |        141 |          1 |         21 |        163 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/service/log_service.rs                   | Rust     |         55 |          0 |         13 |         68 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/service/metadata_service.rs              | Rust     |         45 |          0 |         10 |         55 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/service/mod.rs                           | Rust     |          9 |          0 |          1 |         10 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/service/post_service.rs                  | Rust     |        487 |         29 |         56 |        572 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/service/search_engine_service.rs         | Rust     |         22 |          2 |          7 |         31 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/service/user_service.rs                  | Rust     |         34 |          0 |          7 |         41 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/state/auth_state.rs                      | Rust     |         14 |          0 |          3 |         17 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/state/board_state.rs                     | Rust     |         13 |          0 |          4 |         17 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/state/course_state.rs                    | Rust     |         16 |          0 |          4 |         20 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/state/homework_state.rs                  | Rust     |         18 |          0 |          4 |         22 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/state/limit_state.rs                     | Rust     |         13 |          0 |          3 |         16 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/state/metadata_state.rs                  | Rust     |         13 |          0 |          4 |         17 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/state/mod.rs                             | Rust     |          7 |          0 |          1 |          8 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/state/user_state.rs                      | Rust     |         14 |          0 |          3 |         17 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/utils/mod.rs                             | Rust     |          1 |          0 |          1 |          2 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/src/utils/string_utils.rs                    | Rust     |         13 |          0 |          3 |         16 |
+| /Users/cineazhan/codelab/67ForumSystemNew/forum-rs/templates/login.html                         | HTML     |         62 |          3 |          7 |         72 |
+| Total                                                                                           |          |      8,818 |        260 |      1,180 |     10,258 |
++-------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+

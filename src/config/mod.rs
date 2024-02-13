@@ -1,5 +1,6 @@
 mod app_config;
 pub mod database;
+pub mod meili;
 pub mod permission;
 pub mod redis;
 pub mod s3;
