@@ -1628,6 +1628,7 @@ dependencies = [
  "either",
  "env_logger",
  "forum-macros",
+ "forum-utils",
  "fred",
  "futures",
  "lazy_static",
@@ -1668,6 +1669,7 @@ version = "0.1.0"
 dependencies = [
  "markup5ever",
  "once_cell",
+ "regex",
  "scraper",
 ]
 

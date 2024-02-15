@@ -1,13 +1,22 @@
-use std::sync::Arc;
+use std::{net::IpAddr, sync::Arc};
 
 use async_trait::async_trait;
 use chrono::Local;
-use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
+use forum_utils::html_cleaner::HtmlCleaner;
+use sea_orm::ActiveValue::Set;
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, NotSet, QueryFilter, QuerySelect,
+};
 use serde::{Deserialize, Serialize};
 
+use crate::entity::notification;
+use crate::error::param_error::ParameterError::InvalidParameter;
+use crate::service::notification_service::{NotificationService, NotificationServiceTrait};
+use crate::utils::string_utils::StringUtilsExt;
 use crate::{
     config::{
         database::{DatabaseTrait, Db},
+        meili::Meili,
         AppConfig,
     },
     dto::board::PostLocation,
@@ -17,13 +26,18 @@ use crate::{
     },
     error::{api_error::ApiError, auth_error::AuthError, param_error::ParameterError},
     repository::post_repo::{PostRepository, PostRepositoryTrait},
-    service::board_service::BoardServiceTrait,
+    service::{
+        board_service::BoardServiceTrait, log_service::LogServiceTrait,
+        search_engine_service::SearchEngineServiceTrait,
+    },
 };
 
 use super::{
     board_service::BoardService,
     course_service::{CourseService, CourseServiceTrait},
+    log_service::LogService,
     metadata_service::{MetadataService, MetadataServiceTrait},
+    search_engine_service::SearchEngineService,
     user_service::UserService,
 };
 
@@ -80,17 +94,17 @@ pub trait PostServiceTrait {
     async fn add_post(
         &self,
         user_id: &str,
-        ip_addr: &str,
+        ip_addr: &IpAddr,
         board_id: &str,
         title: &str,
         content: &str,
-    ) -> Result<String, ApiError>;
+    ) -> Result<i32, ApiError>;
 
     /// 添加回复
     async fn add_reply(
         &self,
         user_id: &str,
-        ip_addr: &str,
+        ip_addr: &IpAddr,
         father_post: i32,
         content: &str,
     ) -> Result<(), ApiError>;
@@ -99,7 +113,7 @@ pub trait PostServiceTrait {
     async fn edit_post(
         &self,
         user_id: &str,
-        ip_addr: &str,
+        ip_addr: &IpAddr,
         post_id: i32,
         new_content: &str,
     ) -> Result<(), ApiError>;
@@ -108,7 +122,7 @@ pub trait PostServiceTrait {
     async fn set_post_tag(
         &self,
         user_id: &str,
-        ip_addr: &str,
+        ip_addr: &IpAddr,
         post_id: i32,
         tag: Vec<i32>,
     ) -> Result<(), ApiError>;
@@ -117,20 +131,24 @@ pub trait PostServiceTrait {
     async fn set_post_priority(
         &self,
         user_id: &str,
-        ip_addr: &str,
+        ip_addr: &IpAddr,
         post_id: i32,
         priority: i32,
     ) -> Result<(), ApiError>;
 
     /// 删除帖子
-    async fn delete_post(&self, user_id: &str, ip_addr: &str, post_id: i32)
-        -> Result<(), ApiError>;
+    async fn delete_post(
+        &self,
+        user_id: &str,
+        ip_addr: &IpAddr,
+        post_id: i32,
+    ) -> Result<(), ApiError>;
 
     /// 查询帖子，包括所有回帖及回帖的回帖
     async fn get_post(&self, post_id: i32, with_hidden: bool) -> Result<GetPostsResult, ApiError>;
 
     /// 查询帖子的父帖子
-    async fn get_parent_post(&self, post_id: i32) -> Result<i32, ApiError>;
+    async fn get_parent_post(&self, post_id: i32) -> Result<Option<i32>, ApiError>;
 }
 
 pub struct PostService {
@@ -140,11 +158,14 @@ pub struct PostService {
     pub user_service: UserService,
     pub course_service: CourseService,
     pub board_service: BoardService,
+    pub search_engine_service: SearchEngineService,
+    pub notification_service: NotificationService,
+    pub log_service: LogService,
     pub post_repository: PostRepository,
 }
 
 impl PostService {
-    pub fn new(db_conn: &Arc<Db>, app_config: &Arc<AppConfig>) -> Self {
+    pub fn new(db_conn: &Arc<Db>, app_config: &Arc<AppConfig>, meili_client: &Arc<Meili>) -> Self {
         PostService {
             db_conn: Arc::clone(db_conn),
             app_config: Arc::clone(app_config),
@@ -152,12 +173,15 @@ impl PostService {
             user_service: UserService::new(db_conn),
             course_service: CourseService::new(db_conn, app_config),
             board_service: BoardService::new(db_conn),
+            search_engine_service: SearchEngineService::new(meili_client, db_conn, app_config),
+            notification_service: NotificationService::new(db_conn),
+            log_service: LogService::new(db_conn),
             post_repository: PostRepository::new(db_conn),
         }
     }
 
     pub async fn resolve_tags(&self, tags: &str) -> Result<Vec<String>, ApiError> {
-        let error = ApiError::ParameterError(ParameterError::InvalidParameter("无效的tag传入"));
+        let error = ApiError::ParameterError(InvalidParameter("无效的tag传入"));
         if tags == "[]" {
             return Ok(vec![]);
         }
@@ -166,7 +190,7 @@ impl PostService {
         let tag_indexes: Vec<usize> = serde_json::from_str(tags).map_err(|_| error)?;
         let tag_indexes: Vec<_> = tag_indexes
             .into_iter()
-            .filter(|i| *i >= 0 && *i < tag_list.len())
+            .filter(|i| *i < tag_list.len())
             .map(|index| tag_list[index].tag_field_name.clone())
             .collect();
 
@@ -430,11 +454,11 @@ impl PostServiceTrait for PostService {
     async fn add_post(
         &self,
         user_id: &str,
-        ip_addr: &str,
+        ip_addr: &IpAddr,
         board_id: &str,
         title: &str,
         content: &str,
-    ) -> Result<String, ApiError> {
+    ) -> Result<i32, ApiError> {
         let board = self.board_service.parse_id_and_fetch(board_id).await?;
 
         let post_term = board.course.as_ref().unwrap().course_term.clone();
@@ -499,73 +523,254 @@ impl PostServiceTrait for PostService {
             ..Default::default()
         };
 
-        let post: post::ActiveModel = post.into();
-        post.insert(self.db_conn.get_db()).await?;
+        let post = post::ActiveModel {
+            post_id: NotSet,
+            ..post.into_active_model()
+        };
+        let post = post.insert(self.db_conn.get_db()).await?;
 
-        todo!()
+        // 添加到搜索引擎
+        self.search_engine_service.add_post(post.post_id).await?;
+
+        // 记录日志
+        let comment = "POST 发表帖子";
+        self.log_service
+            .log_post(post.post_id, user_id, ip_addr, comment)
+            .await;
+
+        Ok(post.post_id)
     }
 
     /// 添加回复
     async fn add_reply(
         &self,
         user_id: &str,
-        ip_addr: &str,
-        father_post: i32,
+        ip_addr: &IpAddr,
+        father_post_id: i32,
         content: &str,
     ) -> Result<(), ApiError> {
-        todo!()
+        let father_post = self
+            .post_repository
+            .get_post_without_content(father_post_id)
+            .await?
+            .ok_or(InvalidParameter("不存在的回帖对象"))?;
+
+        let post_term = father_post.post_term;
+        let post_course_code = father_post.post_course_code;
+        let post_hw_id = father_post.post_hw_id;
+        let post_week = father_post.post_week;
+        let post_chapter = father_post.post_chapter;
+
+        let post_title = None;
+        let post_sender_no = user_id.into();
+        let post_answer_id = Some(father_post_id);
+        let post_content = Some(content.into());
+        let post_date = Local::now().naive_local();
+
+        let post_type: String;
+        if user_id == father_post.post_sender_no {
+            post_type = "Answer".into();
+        } else {
+            post_type = "QuestionsAdditional".into();
+        }
+
+        let new_post = post::Model {
+            post_term,
+            post_course_code,
+            post_hw_id,
+            post_week,
+            post_chapter,
+            post_answer_id,
+            post_type,
+            post_sender_no,
+            post_title,
+            post_content,
+            post_date,
+            ..Default::default()
+        };
+        let new_post = post::ActiveModel {
+            post_id: NotSet,
+            ..new_post.into_active_model()
+        };
+
+        let new_post = new_post.insert(self.db_conn.get_db()).await?;
+        self.search_engine_service
+            .add_post(new_post.post_id)
+            .await?;
+
+        // 记录日志
+        let comment = format!("REPLY 回复{}", father_post_id);
+        self.log_service
+            .log_post(new_post.post_id, user_id, ip_addr, &comment)
+            .await;
+
+        // 发送通知
+        if father_post.post_sender_no != user_id {
+            let ntf_title = "收到新回复".to_string();
+            let ntf_content = format!(
+                "{}",
+                HtmlCleaner::html_to_text(new_post.post_content.as_ref().unwrap()).abbreviate(35)
+            );
+            let ntf_type = "REPLY".to_string();
+            let ntf_receiver = father_post.post_sender_no.clone();
+
+            let notification = notification::Model {
+                ntf_id: 0,
+                ntf_type,
+                ntf_title,
+                ntf_content,
+                ntf_receiver,
+                ntf_datetime: Default::default(),
+                ntf_read: false,
+            };
+
+            self.notification_service
+                .send_notification(notification)
+                .await?;
+        }
+
+        Ok(())
     }
 
     /// 编辑帖子
     async fn edit_post(
         &self,
         user_id: &str,
-        ip_addr: &str,
+        ip_addr: &IpAddr,
         post_id: i32,
         new_content: &str,
     ) -> Result<(), ApiError> {
-        todo!()
+        let mut post = Entity::find_by_id(post_id)
+            .one(self.db_conn.get_db())
+            .await?
+            .ok_or(InvalidParameter("帖子不存在"))?
+            .into_active_model();
+
+        post.post_content = Set(Some(new_content.to_string()));
+        post.save(self.db_conn.get_db()).await?;
+
+        // 记录日志
+        let comment = "EDIT 进行了编辑";
+        self.log_service
+            .log_post(post_id, user_id, ip_addr, comment)
+            .await;
+
+        self.search_engine_service.add_post(post_id).await?;
+
+        Ok(())
     }
 
     /// 设置帖子标签
     async fn set_post_tag(
         &self,
         user_id: &str,
-        ip_addr: &str,
+        ip_addr: &IpAddr,
         post_id: i32,
         tag: Vec<i32>,
     ) -> Result<(), ApiError> {
-        todo!()
+        let mut post = Entity::find_by_id(post_id)
+            .one(self.db_conn.get_db())
+            .await?
+            .ok_or(InvalidParameter("帖子不存在"))?
+            .into_active_model();
+
+        let mut tags_ref = [
+            &mut post.post_tag_01,
+            &mut post.post_tag_02,
+            &mut post.post_tag_03,
+            &mut post.post_tag_04,
+            &mut post.post_tag_05,
+            &mut post.post_tag_06,
+            &mut post.post_tag_07,
+            &mut post.post_tag_08,
+            &mut post.post_tag_09,
+            &mut post.post_tag_10,
+        ];
+        let tags_len = tags_ref.len();
+
+        tags_ref
+            .iter_mut()
+            .for_each(|tag_ref| **tag_ref = Set("0".to_string()));
+        tag.iter()
+            .filter(|&&t| t >= 0 && t < (tags_len as i32).clone())
+            .for_each(|&i| *tags_ref[i as usize] = Set("1".to_string()));
+
+        post.save(self.db_conn.get_db()).await?;
+
+        // 记录日志
+        let comment = format!("TAG 设置了新标签: {:?}", tag);
+        self.log_service
+            .log_post(post_id, user_id, ip_addr, &comment)
+            .await;
+
+        Ok(())
     }
 
     /// 设置帖子优先级
     async fn set_post_priority(
         &self,
         user_id: &str,
-        ip_addr: &str,
+        ip_addr: &IpAddr,
         post_id: i32,
         priority: i32,
     ) -> Result<(), ApiError> {
-        todo!()
+        let mut post = Entity::find_by_id(post_id)
+            .one(self.db_conn.get_db())
+            .await?
+            .ok_or(InvalidParameter("帖子不存在"))?
+            .into_active_model();
+
+        post.post_priority = Set(priority.to_string());
+        post.save(self.db_conn.get_db()).await?;
+
+        // 记录日志
+        let comment = format!("PRIORITY 新优先级为：{}", priority);
+        self.log_service
+            .log_post(post_id, user_id, ip_addr, &comment)
+            .await;
+
+        Ok(())
     }
 
     /// 删除帖子
     async fn delete_post(
         &self,
         user_id: &str,
-        ip_addr: &str,
+        ip_addr: &IpAddr,
         post_id: i32,
     ) -> Result<(), ApiError> {
-        todo!()
+        let res = Entity::delete_by_id(post_id)
+            .exec(self.db_conn.get_db())
+            .await?;
+
+        if res.rows_affected > 0 {
+            // 记录日志
+            let comment = "DELETE";
+            self.log_service
+                .log_post(post_id, user_id, ip_addr, comment)
+                .await;
+        }
+
+        Ok(())
     }
 
     /// 查询帖子，包括所有回帖及回帖的回帖
     async fn get_post(&self, post_id: i32, with_hidden: bool) -> Result<GetPostsResult, ApiError> {
-        todo!()
+        let mut posts = self.post_repository.get_posts_recursively(post_id).await?;
+
+        if !with_hidden {
+            posts = posts.into_iter().filter(|p| p.post_is_del == "0").collect();
+        }
+
+        Ok(GetPostsResult { posts })
     }
 
     /// 查询帖子的父帖子
-    async fn get_parent_post(&self, post_id: i32) -> Result<i32, ApiError> {
-        todo!()
+    async fn get_parent_post(&self, post_id: i32) -> Result<Option<i32>, ApiError> {
+        self.post_repository
+            .get_parent_post_recursively(post_id)
+            .await
+            .map(|p| p.map(|p| p.post_id))
+            .map_err(Into::into)
     }
 }

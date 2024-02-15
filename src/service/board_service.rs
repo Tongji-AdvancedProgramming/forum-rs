@@ -47,7 +47,7 @@ impl BoardServiceTrait for BoardService {
         // 识别学期和课程
         let term = tokens[0];
         let course_code = tokens[1];
-        if !term.is_numberic() || !course_code.is_numberic() {
+        if !term.is_numeric() || !course_code.is_numeric() {
             return Err(ParameterError::InvalidParameter(
                 "传入的ID格式不正确：学期或课程代码不是纯数字".into(),
             ));
@@ -71,7 +71,7 @@ impl BoardServiceTrait for BoardService {
         let mut week = 0;
         if location != PostLocation::Course && location != PostLocation::CourseSummary {
             let week_str = &tokens[2][1..];
-            if !tokens[2].starts_with("w") || !week_str.is_numberic() {
+            if !tokens[2].starts_with("w") || !week_str.is_numeric() {
                 return Err(ParameterError::InvalidParameter(
                     "传入的ID格式不正确：周次格式不正确".into(),
                 ));

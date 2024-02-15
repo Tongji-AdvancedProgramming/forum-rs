@@ -4,6 +4,7 @@ pub mod course_service;
 pub mod homework_service;
 pub mod log_service;
 pub mod metadata_service;
+pub mod notification_service;
 pub mod post_service;
 pub mod search_engine_service;
 pub mod user_service;

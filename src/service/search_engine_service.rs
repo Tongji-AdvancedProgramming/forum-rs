@@ -65,7 +65,7 @@ impl SearchEngineServiceRunner {
                 }
                 let post_id = post_id.unwrap();
 
-                let mut post = post::Entity::find_by_id(post_id).one(db.get_db()).await;
+                let post = post::Entity::find_by_id(post_id).one(db.get_db()).await;
                 if let Ok(Some(post)) = post {
                     if post.post_is_del == "1" {
                         let _ = meili_client

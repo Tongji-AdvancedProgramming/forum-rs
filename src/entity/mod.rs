@@ -3,6 +3,7 @@ pub mod homework;
 pub mod homework_uploaded;
 pub mod log_login;
 pub mod log_post;
+pub mod notification;
 pub mod post;
 pub mod student;
 pub mod student_info;

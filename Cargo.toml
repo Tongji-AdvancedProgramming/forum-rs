@@ -50,6 +50,7 @@ moka = { version = "0.12.5", features = ["future"] }
 futures = "0.3.30"
 minio = "0.1.0"
 forum-macros = { path = "./forum-macros" }
+forum-utils = { path = "./forum-utils" }
 once_cell = "1.19.0"
 meilisearch-sdk = "0.24.3"
 
