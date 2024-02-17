@@ -1,6 +1,7 @@
 use crate::{error::auth_error::AuthError, service::post_service::PostServiceTrait};
 use axum::{extract::State, http::StatusCode, Form};
 use axum_client_ip::SecureClientIp;
+use axum_extra::extract::Form as ExForm;
 use axum_login::AuthUser;
 use forum_macros::forum_handler;
 use forum_utils::encoding_helper::EncodingHelper;
@@ -113,18 +114,19 @@ pub async fn edit_post(
 #[serde(rename_all = "camelCase")]
 pub struct SetPostTagsParams {
     /// 帖子Id
-    pub post_id: i32,
+    pub post_id: Vec<i32>,
 
     /// 标签
-    pub tag: String,
+    #[serde(default)]
+    pub tag: Vec<i32>,
 }
 
 // #[forum_handler]
 pub async fn set_post_tags(
     State(state): State<PostState>,
     auth_session: AuthSession,
-    Form(params): Form<SetPostTagsParams>,
-) -> StatusCode {
-    info!("Post tags {:?}", params);
-    StatusCode::OK
+    SecureClientIp(ip_addr): SecureClientIp,
+    ExForm(params): ExForm<SetPostTagsParams>,
+) {
+    let user_id = auth_session.user.unwrap().id();
 }

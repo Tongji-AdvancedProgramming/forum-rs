@@ -4,9 +4,7 @@ use async_trait::async_trait;
 use chrono::Local;
 use forum_utils::html_cleaner::HtmlCleaner;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{
-    ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, NotSet, QueryFilter, QuerySelect,
-};
+use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, JoinType, NotSet, QueryFilter, QuerySelect};
 use serde::{Deserialize, Serialize};
 
 use crate::entity::notification;
@@ -67,6 +65,13 @@ pub trait PostServiceTrait {
         &self,
         user_id: &str,
         post_id: i32,
+    ) -> Result<bool, ApiError>;
+
+    /// 确认用户可以编辑这些帖子
+    async fn ensure_edit_posts_permission(
+        &self,
+        user_id: &str,
+        post_ids: Vec<i32>,
     ) -> Result<bool, ApiError>;
 
     /// 获取板块内的帖子
@@ -245,22 +250,21 @@ impl PostServiceTrait for PostService {
         user_id: &str,
         post_id: i32,
     ) -> Result<bool, ApiError> {
-        let post = Entity::find()
-            .select_only()
-            .column(Cols::PostSenderNo)
-            .filter(Cols::PostId.eq(post_id))
-            .one(self.db_conn.get_db())
-            .await?
-            .ok_or(ParameterError::InvalidParameter("无效的帖子id"))?;
-
-        if user_id == post.post_sender_no {
-            return Ok(true);
-        }
+        // let post = Entity::find()
+        //     .select_only()
+        //     .column(Cols::PostSenderNo)
+        //     .filter(Cols::PostId.eq(post_id))
+        //     .one(self.db_conn.get_db())
+        //     .await?
+        //     .ok_or(ParameterError::InvalidParameter("无效的帖子id"))?;
+        //
+        // if user_id == post.post_sender_no {
+        //     return Ok(true);
+        // }
 
         let post_user = student::Entity::find()
             .select_only()
             .column(student::Column::StuUserLevel)
-            .filter(student::Column::StuNo.eq(post.post_sender_no))
             .one(self.db_conn.get_db())
             .await?
             .ok_or(ParameterError::InvalidParameter("无效的用户id"))?;
@@ -276,6 +280,13 @@ impl PostServiceTrait for PostService {
         Ok(user.stu_user_level.parse::<i32>().unwrap_or(0)
             < post_user.stu_user_level.parse::<i32>().unwrap_or(0))
     }
+
+    async fn ensure_edit_posts_permission(&self, user_id: &str, post_ids: Vec<i32>) -> Result<bool, ApiError> {
+        let
+
+        todo!()
+    }
+
 
     /// 获取板块内的帖子
     async fn get_posts(
