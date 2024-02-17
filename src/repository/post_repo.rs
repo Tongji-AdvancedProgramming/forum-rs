@@ -146,6 +146,7 @@ pub trait PostRepositoryTrait {
     async fn get_parent_post_recursively(&self, post_id: i32) -> Result<Option<Post>, Self::Error>;
 }
 
+#[derive(Clone)]
 pub struct PostRepository {
     db: Arc<Db>,
 }

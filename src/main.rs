@@ -9,7 +9,7 @@ use tower_sessions::{Expiry, SessionManagerLayer};
 
 use crate::config::database::DatabaseTrait;
 use crate::config::redis::RedisTrait;
-use crate::config::{database, redis, s3, session};
+use crate::config::{database, meili, redis, s3, session};
 use crate::service::auth_service::AuthBackend;
 
 pub mod config;
@@ -57,6 +57,8 @@ async fn main() {
         panic()
     }));
 
+    let meili_client = Arc::new(meili::Meili::init());
+
     // Session层
     let session_store = session::RedisSession::new(&redis_conn);
     let session_layer = SessionManagerLayer::new(session_store)
@@ -90,6 +92,7 @@ async fn main() {
             Arc::clone(&db_conn),
             Arc::clone(&redis_conn),
             Arc::clone(&s3_client),
+            Arc::clone(&meili_client),
             auth_layer,
         ),
     )

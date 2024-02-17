@@ -1667,6 +1667,7 @@ dependencies = [
 name = "forum-utils"
 version = "0.1.0"
 dependencies = [
+ "encoding_rs",
  "markup5ever",
  "once_cell",
  "regex",

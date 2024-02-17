@@ -1,4 +1,5 @@
 use axum::extract::connect_info::IntoMakeServiceWithConnectInfo;
+use axum::extract::DefaultBodyLimit;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
@@ -12,6 +13,7 @@ use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::config::database::Db;
+use crate::config::meili::Meili;
 use crate::config::redis::Redis;
 
 use crate::config::s3::S3Conn;
@@ -25,14 +27,16 @@ use crate::state::course_state::CourseState;
 use crate::state::homework_state::HomeworkState;
 use crate::state::limit_state::LimitState;
 use crate::state::metadata_state::MetadataState;
+use crate::state::post_state::PostState;
 use crate::state::user_state::UserState;
 
-use super::{board_routes, course_routes, homework_routes, metadata_routes};
+use super::{board_routes, course_routes, homework_routes, metadata_routes, post_routes};
 
 pub fn routes(
     db_conn: Arc<Db>,
     redis: Arc<Redis>,
     s3_client: Arc<S3Conn>,
+    meili_client: Arc<Meili>,
     auth_layer: AuthManagerLayer<AuthBackend, impl SessionStore + Clone>,
 ) -> IntoMakeServiceWithConnectInfo<Router, SocketAddr> {
     let app_config = {
@@ -46,8 +50,9 @@ pub fn routes(
         let board_state = BoardState::new(&db_conn);
         let course_state = CourseState::new(&db_conn, &app_config);
         let homework_state = HomeworkState::new(&db_conn, &s3_client, &app_config);
-        let metadata_state = MetadataState::new(&db_conn);
         let limit_state = LimitState::new(&redis);
+        let metadata_state = MetadataState::new(&db_conn);
+        let post_state = PostState::new(&db_conn, &app_config, &meili_client);
         let user_state = UserState::new(&db_conn);
 
         Router::new()
@@ -62,6 +67,7 @@ pub fn routes(
                 "/meta",
                 metadata_routes::routes().with_state(metadata_state),
             )
+            .nest("/post", post_routes::routes().with_state(post_state))
             .route_layer(login_required!(AuthBackend))
             .merge(auth_routes::routes(limit_state).with_state(auth_state))
             .route(
@@ -78,6 +84,7 @@ pub fn routes(
         .merge(merged_router)
         .layer(auth_layer)
         .layer(TraceLayer::new_for_http())
+        .layer(DefaultBodyLimit::max(1024 * 1024 * 10))
         .layer(SecureClientIpSource::ConnectInfo.into_extension()); // 在生产中改成别的
 
     app_router.into_make_service_with_connect_info()

@@ -151,6 +151,7 @@ pub trait PostServiceTrait {
     async fn get_parent_post(&self, post_id: i32) -> Result<Option<i32>, ApiError>;
 }
 
+#[derive(Clone)]
 pub struct PostService {
     pub db_conn: Arc<Db>,
     pub app_config: Arc<AppConfig>,

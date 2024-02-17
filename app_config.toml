@@ -21,3 +21,24 @@ url = "redis://:rememberus@10.80.42.189/13"
 ta = 1
 admin = 5
 super = 9
+
+# S3文件存储连接信息
+[s3]
+endpoint = "http://10.80.43.196:9000/"
+bucket = "forum"
+access_key = "50My98IAnFXDniBxbmFK"
+secret_key = "qLfkBObNiIzHOStJzmiSLd6KwTiYnY8qBlOR0T9r"
+base_url = "http://10.80.43.196/s3/forum"
+
+[s3.prefix]
+upload = "/user-upload/"
+avatar = "/user-avatar/"
+card_bg = "/user-card/"
+homework_upload = "/homework-upload/"
+
+[meili]
+host = "http://10.80.42.189:7700"
+key = "keI4qhrWElK6UqFt928AkKjDfIn1skn5cXcqP5sLaHo"
+
+[meili.index]
+post = "post_dev"
