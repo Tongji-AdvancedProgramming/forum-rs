@@ -3,7 +3,6 @@ use utoipa::OpenApi;
 #[derive(OpenApi)]
 #[openapi(
     paths(
-        super::user_handler::info,
         super::auth_handler::post::login,
         super::auth_handler::get::logout,
         super::board_handler::get_board_info,

@@ -59,7 +59,7 @@ pub fn routes(
         let metadata_state = MetadataState::new(&db_conn);
         let notification_state = NotificationState::new(&db_conn);
         let post_state = PostState::new(&db_conn, &app_config, &meili_client);
-        let user_state = UserState::new(&db_conn);
+        let user_state = UserState::new(&db_conn, &s3_client, &app_config);
         let upload_state = UploadState::new(&s3_client, &app_config);
 
         Router::new()

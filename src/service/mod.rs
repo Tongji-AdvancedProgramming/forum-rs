@@ -7,5 +7,6 @@ pub mod metadata_service;
 pub mod notification_service;
 pub mod post_service;
 pub mod search_engine_service;
+pub mod student_info_service;
 pub mod upload_service;
 pub mod user_service;
