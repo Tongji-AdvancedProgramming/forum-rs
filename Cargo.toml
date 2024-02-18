@@ -8,7 +8,7 @@ edition = "2021"
 opt-level = 3
 
 [dependencies]
-axum = { version = "0.7.4" }
+axum = { version = "0.7.4", features = ["multipart"] }
 config = "0.13.4"
 env_logger = "0.11.1"
 lazy_static = "1.4.0"
@@ -48,7 +48,7 @@ sea-orm = { version = "0.12", features = [
 parking_lot = "0.12.1"
 moka = { version = "0.12.5", features = ["future"] }
 futures = "0.3.30"
-minio = "0.1.0"
+minio = { git = "https://github.com/1ntervalica/minio-rs.git" }
 forum-macros = { path = "./forum-macros" }
 forum-utils = { path = "./forum-utils" }
 once_cell = "1.19.0"

@@ -6,4 +6,5 @@ pub mod metadata_routes;
 pub mod notification_routes;
 pub mod post_routes;
 pub mod root;
+pub mod upload_routes;
 pub mod user_routes;

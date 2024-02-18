@@ -6,4 +6,5 @@ pub mod limit_state;
 pub mod metadata_state;
 pub mod notification_state;
 pub mod post_state;
+pub mod upload_state;
 pub mod user_state;

@@ -29,10 +29,12 @@ use crate::state::limit_state::LimitState;
 use crate::state::metadata_state::MetadataState;
 use crate::state::notification_state::NotificationState;
 use crate::state::post_state::PostState;
+use crate::state::upload_state::UploadState;
 use crate::state::user_state::UserState;
 
 use super::{
-    board_routes, course_routes, homework_routes, metadata_routes, notification_routes, post_routes,
+    board_routes, course_routes, homework_routes, metadata_routes, notification_routes,
+    post_routes, upload_routes,
 };
 
 pub fn routes(
@@ -58,6 +60,7 @@ pub fn routes(
         let notification_state = NotificationState::new(&db_conn);
         let post_state = PostState::new(&db_conn, &app_config, &meili_client);
         let user_state = UserState::new(&db_conn);
+        let upload_state = UploadState::new(&s3_client, &app_config);
 
         Router::new()
             .nest("/user", user_routes::routes().with_state(user_state))
@@ -76,6 +79,7 @@ pub fn routes(
                 notification_routes::routes().with_state(notification_state),
             )
             .nest("/post", post_routes::routes().with_state(post_state))
+            .nest("/upload", upload_routes::routes().with_state(upload_state))
             .route_layer(login_required!(AuthBackend))
             .merge(auth_routes::routes(limit_state).with_state(auth_state))
             .route(
