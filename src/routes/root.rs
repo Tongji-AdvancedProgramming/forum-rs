@@ -27,10 +27,13 @@ use crate::state::course_state::CourseState;
 use crate::state::homework_state::HomeworkState;
 use crate::state::limit_state::LimitState;
 use crate::state::metadata_state::MetadataState;
+use crate::state::notification_state::NotificationState;
 use crate::state::post_state::PostState;
 use crate::state::user_state::UserState;
 
-use super::{board_routes, course_routes, homework_routes, metadata_routes, post_routes};
+use super::{
+    board_routes, course_routes, homework_routes, metadata_routes, notification_routes, post_routes,
+};
 
 pub fn routes(
     db_conn: Arc<Db>,
@@ -52,6 +55,7 @@ pub fn routes(
         let homework_state = HomeworkState::new(&db_conn, &s3_client, &app_config);
         let limit_state = LimitState::new(&redis);
         let metadata_state = MetadataState::new(&db_conn);
+        let notification_state = NotificationState::new(&db_conn);
         let post_state = PostState::new(&db_conn, &app_config, &meili_client);
         let user_state = UserState::new(&db_conn);
 
@@ -66,6 +70,10 @@ pub fn routes(
             .nest(
                 "/meta",
                 metadata_routes::routes().with_state(metadata_state),
+            )
+            .nest(
+                "/notification",
+                notification_routes::routes().with_state(notification_state),
             )
             .nest("/post", post_routes::routes().with_state(post_state))
             .route_layer(login_required!(AuthBackend))

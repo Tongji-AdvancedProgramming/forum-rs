@@ -2,8 +2,8 @@ use std::{sync::Arc, vec};
 
 use async_trait::async_trait;
 use sea_orm::{
-    ColumnTrait, Condition, DbBackend, EntityTrait, Order, PaginatorTrait, QueryFilter, QueryOrder,
-    QuerySelect, Select, Statement,
+    ColumnTrait, Condition, DbBackend, EntityTrait, FromQueryResult, JsonValue, Order,
+    PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, Select, Statement,
 };
 
 use crate::{
@@ -144,6 +144,15 @@ pub trait PostRepositoryTrait {
 
     /// 递归查询某个帖子的父帖子
     async fn get_parent_post_recursively(&self, post_id: i32) -> Result<Option<Post>, Self::Error>;
+
+    /// 查询指定帖子的发帖用户等级
+    async fn get_post_sender_user_level(&self, post_id: i32) -> Result<Option<i64>, Self::Error>;
+
+    /// 查询指定帖子的最大发帖用户等级
+    async fn get_posts_sender_max_user_level(
+        &self,
+        post_id: &Vec<i32>,
+    ) -> Result<Option<i64>, Self::Error>;
 }
 
 #[derive(Clone)]
@@ -498,4 +507,79 @@ impl PostRepositoryTrait for PostRepository {
             .one(self.db.get_db())
             .await
     }
+
+    async fn get_post_sender_user_level(&self, post_id: i32) -> Result<Option<i64>, Self::Error> {
+        let sql = r"select s.stu_userlevel from post p left join student s on s.stu_no = p.post_sno where p.post_id = ?;";
+
+        let result = JsonValue::find_by_statement(Statement::from_sql_and_values(
+            DbBackend::MySql,
+            sql,
+            [post_id.into()],
+        ))
+        .one(self.db.get_db())
+        .await?
+        .ok_or(Self::Error::Custom("查询异常".into()))?;
+
+        let result = result
+            .as_object()
+            .ok_or(Self::Error::Custom("查询异常".into()))?;
+
+        Ok(result
+            .get("stu_userlevel")
+            .cloned()
+            .unwrap_or_default()
+            .as_i64())
+    }
+
+    async fn get_posts_sender_max_user_level(
+        &self,
+        post_id: &Vec<i32>,
+    ) -> Result<Option<i64>, Self::Error> {
+        let sql = format!(
+            r"select max(s.stu_userlevel) as max_level from post p left join student s on s.stu_no = p.post_sno where p.post_id in ({});",
+            vec!["?"; post_id.len()].join(",")
+        );
+
+        let result = JsonValue::find_by_statement(Statement::from_sql_and_values(
+            DbBackend::MySql,
+            sql,
+            post_id.iter().cloned().map(Into::into).collect::<Vec<_>>(),
+        ))
+        .one(self.db.get_db())
+        .await?
+        .ok_or(Self::Error::Custom("查询异常".into()))?;
+
+        let result = result
+            .as_object()
+            .ok_or(Self::Error::Custom("查询异常".into()))?;
+
+        Ok(result
+            .get("max_level")
+            .cloned()
+            .unwrap_or_default()
+            .as_i64())
+    }
 }
+
+// #[cfg(test)]
+// mod test {
+//     use crate::config::database;
+//     use crate::config::database::DatabaseTrait;
+//     use crate::repository::post_repo::{PostRepository, PostRepositoryTrait};
+//     use std::sync::Arc;
+//
+//     #[tokio::test]
+//     pub async fn test() {
+//         crate::config::init();
+//         let db_conn = Arc::new(database::Db::init().await.unwrap());
+//
+//         let post_repo = PostRepository::new(&db_conn);
+//
+//         println!(
+//             "{:?}",
+//             post_repo
+//                 .get_posts_sender_max_user_level(vec![18, 19, 20, 21])
+//                 .await
+//         )
+//     }
+// }

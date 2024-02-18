@@ -4,7 +4,9 @@ use async_trait::async_trait;
 use chrono::Local;
 use forum_utils::html_cleaner::HtmlCleaner;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, JoinType, NotSet, QueryFilter, QuerySelect};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, NotSet, QueryFilter, QuerySelect,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::entity::notification;
@@ -71,7 +73,7 @@ pub trait PostServiceTrait {
     async fn ensure_edit_posts_permission(
         &self,
         user_id: &str,
-        post_ids: Vec<i32>,
+        post_ids: &Vec<i32>,
     ) -> Result<bool, ApiError>;
 
     /// 获取板块内的帖子
@@ -129,7 +131,7 @@ pub trait PostServiceTrait {
         user_id: &str,
         ip_addr: &IpAddr,
         post_id: i32,
-        tag: Vec<i32>,
+        tag: &Vec<i32>,
     ) -> Result<(), ApiError>;
 
     /// 设置帖子优先级
@@ -250,24 +252,11 @@ impl PostServiceTrait for PostService {
         user_id: &str,
         post_id: i32,
     ) -> Result<bool, ApiError> {
-        // let post = Entity::find()
-        //     .select_only()
-        //     .column(Cols::PostSenderNo)
-        //     .filter(Cols::PostId.eq(post_id))
-        //     .one(self.db_conn.get_db())
-        //     .await?
-        //     .ok_or(ParameterError::InvalidParameter("无效的帖子id"))?;
-        //
-        // if user_id == post.post_sender_no {
-        //     return Ok(true);
-        // }
-
-        let post_user = student::Entity::find()
-            .select_only()
-            .column(student::Column::StuUserLevel)
-            .one(self.db_conn.get_db())
+        let post_level = self
+            .post_repository
+            .get_post_sender_user_level(post_id)
             .await?
-            .ok_or(ParameterError::InvalidParameter("无效的用户id"))?;
+            .ok_or(InvalidParameter("无效的帖子Id"))?;
 
         let user = student::Entity::find()
             .select_only()
@@ -277,16 +266,30 @@ impl PostServiceTrait for PostService {
             .await?
             .ok_or(ParameterError::InvalidParameter("无效的用户id"))?;
 
-        Ok(user.stu_user_level.parse::<i32>().unwrap_or(0)
-            < post_user.stu_user_level.parse::<i32>().unwrap_or(0))
+        Ok(user.stu_user_level.parse::<i64>().unwrap_or(0) < post_level)
     }
 
-    async fn ensure_edit_posts_permission(&self, user_id: &str, post_ids: Vec<i32>) -> Result<bool, ApiError> {
-        let
+    async fn ensure_edit_posts_permission(
+        &self,
+        user_id: &str,
+        post_ids: &Vec<i32>,
+    ) -> Result<bool, ApiError> {
+        let post_level = self
+            .post_repository
+            .get_posts_sender_max_user_level(post_ids)
+            .await?
+            .ok_or(InvalidParameter("无效的帖子Id"))?;
 
-        todo!()
+        let user = student::Entity::find()
+            .select_only()
+            .column(student::Column::StuUserLevel)
+            .filter(student::Column::StuNo.eq(user_id))
+            .one(self.db_conn.get_db())
+            .await?
+            .ok_or(ParameterError::InvalidParameter("无效的用户id"))?;
+
+        Ok(user.stu_user_level.parse::<i64>().unwrap_or(0) < post_level)
     }
-
 
     /// 获取板块内的帖子
     async fn get_posts(
@@ -678,7 +681,7 @@ impl PostServiceTrait for PostService {
         user_id: &str,
         ip_addr: &IpAddr,
         post_id: i32,
-        tag: Vec<i32>,
+        tag: &Vec<i32>,
     ) -> Result<(), ApiError> {
         let mut post = Entity::find_by_id(post_id)
             .one(self.db_conn.get_db())

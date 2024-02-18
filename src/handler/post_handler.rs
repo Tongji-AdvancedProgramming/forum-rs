@@ -1,13 +1,17 @@
+use crate::config::permission::Permission;
+use crate::entity::post;
+use crate::error::param_error::ParameterError::InvalidParameter;
+use crate::error::proc_error::ProcessError;
+use crate::service::post_service::GetPostsResult;
 use crate::{error::auth_error::AuthError, service::post_service::PostServiceTrait};
-use axum::{extract::State, http::StatusCode, Form};
+use axum::{extract::State, Form};
 use axum_client_ip::SecureClientIp;
 use axum_extra::extract::Form as ExForm;
-use axum_login::AuthUser;
+use axum_login::{AuthUser, AuthzBackend};
 use forum_macros::forum_handler;
 use forum_utils::encoding_helper::EncodingHelper;
-use log::info;
-use serde::Deserialize;
-use utoipa::IntoParams;
+use serde::{Deserialize, Serialize};
+use utoipa::{IntoParams, ToResponse};
 
 use crate::state::post_state::PostState;
 
@@ -121,7 +125,8 @@ pub struct SetPostTagsParams {
     pub tag: Vec<i32>,
 }
 
-// #[forum_handler]
+/// 设置帖子标签
+#[forum_handler]
 pub async fn set_post_tags(
     State(state): State<PostState>,
     auth_session: AuthSession,
@@ -129,4 +134,228 @@ pub async fn set_post_tags(
     ExForm(params): ExForm<SetPostTagsParams>,
 ) {
     let user_id = auth_session.user.unwrap().id();
+
+    if state
+        .post_service
+        .ensure_edit_posts_permission(&user_id, &params.tag)
+        .await?
+    {
+        for id in params.post_id {
+            state
+                .post_service
+                .set_post_tag(&user_id, &ip_addr, id, &params.tag)
+                .await?
+        }
+        Ok::<(), ApiError>(())
+    } else {
+        Err(AuthError::PermissionDenied("请求中存在无权设置标签的帖子").into())
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, IntoParams)]
+#[serde(rename_all = "camelCase")]
+pub struct SetPostPriorityParams {
+    /// 帖子Id
+    pub post_id: Vec<i32>,
+
+    /// 优先级
+    #[serde(default)]
+    pub priority: i32,
+}
+
+/// 设置帖子优先级
+#[forum_handler]
+pub async fn set_post_priority(
+    State(state): State<PostState>,
+    auth_session: AuthSession,
+    SecureClientIp(ip_addr): SecureClientIp,
+    ExForm(params): ExForm<SetPostPriorityParams>,
+) {
+    let user_id = auth_session.user.unwrap().id();
+
+    if params.priority < 0 || params.priority > 9 {
+        return Err(InvalidParameter("优先级只能为0~9").into());
+    }
+
+    if state
+        .post_service
+        .ensure_edit_posts_permission(&user_id, &params.post_id)
+        .await?
+    {
+        for id in params.post_id {
+            state
+                .post_service
+                .set_post_priority(&user_id, &ip_addr, id, params.priority)
+                .await?
+        }
+        Ok::<(), ApiError>(())
+    } else {
+        Err(AuthError::PermissionDenied("请求中存在无权设置优先级的帖子").into())
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, IntoParams)]
+#[serde(rename_all = "camelCase")]
+pub struct DeletePostsParams {
+    /// 帖子Id
+    pub post_id: Vec<i32>,
+}
+
+/// 删除帖子或回复
+#[forum_handler]
+pub fn delete_posts(
+    State(state): State<PostState>,
+    auth_session: AuthSession,
+    SecureClientIp(ip_addr): SecureClientIp,
+    ExForm(params): ExForm<DeletePostsParams>,
+) {
+    let user_id = &auth_session.user.as_ref().unwrap().id();
+
+    if state
+        .post_service
+        .ensure_edit_posts_permission(&user_id, &params.post_id)
+        .await?
+    {
+        for id in params.post_id {
+            state
+                .post_service
+                .delete_post(user_id, &ip_addr, id)
+                .await?
+        }
+        Ok::<(), ApiError>(())
+    } else {
+        Err(AuthError::PermissionDenied("请求中存在无权删除的帖子").into())
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, IntoParams)]
+#[serde(rename_all = "camelCase")]
+pub struct ListPostsParams {
+    /// 板块id
+    pub board_id: String,
+
+    /// 标签序号
+    pub tags: String,
+
+    /// 是否显示隐藏帖子
+    pub show_hidden: bool,
+
+    /// 分页: 页面大小
+    pub page_size: u64,
+
+    /// 分页: 页面编号
+    pub page_index: u64,
+}
+
+#[derive(Debug, Clone, Serialize, ToResponse)]
+#[serde(rename_all = "camelCase")]
+pub struct ListPostsResult {
+    pub total_count: u64,
+    pub posts: Vec<post::Model>,
+}
+
+/// 列出帖子
+#[forum_handler]
+pub async fn list_posts(
+    State(state): State<PostState>,
+    auth_session: AuthSession,
+    Form(params): Form<ListPostsParams>,
+) -> ListPostsResult {
+    let user_id = &auth_session.user.as_ref().unwrap().id();
+    let tags = urlencoding::decode(&params.tags).map_err(|_| InvalidParameter("传入的tag无效"))?;
+
+    if params.show_hidden
+        && !auth_session
+            .backend
+            .has_perm(auth_session.user.as_ref().unwrap(), Permission::TA)
+            .await
+            .map_err(|_| ProcessError::GeneralError("验证权限失败"))?
+    {
+        return Err(AuthError::PermissionDenied("您无权查看隐藏帖子").into());
+    }
+
+    if state
+        .post_service
+        .ensure_query_board_permission(&user_id, &params.board_id)
+        .await?
+    {
+        Ok::<_, ApiError>(ListPostsResult {
+            total_count: state
+                .post_service
+                .get_posts_count(&params.board_id, &tags, params.show_hidden, false)
+                .await?,
+            posts: state
+                .post_service
+                .get_posts(
+                    &params.board_id,
+                    &tags,
+                    params.show_hidden,
+                    false,
+                    false,
+                    params.page_size,
+                    params.page_index,
+                )
+                .await?,
+        })
+    } else {
+        Err(AuthError::PermissionDenied("您无权查看本板块").into())
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, IntoParams)]
+#[serde(rename_all = "camelCase")]
+pub struct GetPostsParams {
+    pub post_id: i32,
+    pub show_hidden: bool,
+}
+
+/// 显示帖子（含回帖等）
+///
+/// 用于在帖子页中使用，包含回帖等内容
+#[forum_handler]
+pub async fn get_posts(
+    State(state): State<PostState>,
+    auth_session: AuthSession,
+    Form(params): Form<GetPostsParams>,
+) -> GetPostsResult {
+    if params.show_hidden
+        && !auth_session
+            .backend
+            .has_perm(auth_session.user.as_ref().unwrap(), Permission::TA)
+            .await
+            .map_err(|_| ProcessError::GeneralError("验证权限失败"))?
+    {
+        return Err(AuthError::PermissionDenied("您无权查看隐藏帖子").into());
+    }
+
+    let user_id = &auth_session.user.as_ref().unwrap().id();
+    if state
+        .post_service
+        .ensure_query_post_permission(user_id, params.post_id)
+        .await?
+    {
+        state
+            .post_service
+            .get_post(params.post_id, params.show_hidden)
+            .await
+    } else {
+        Err(AuthError::PermissionDenied("您无权查看此帖子").into())
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, IntoParams)]
+#[serde(rename_all = "camelCase")]
+pub struct GetPostParentParams {
+    pub post_id: i32,
+}
+
+/// 查询帖子的父亲帖子
+///
+/// 用于跳转的时候准确跳转到父亲帖子
+#[forum_handler]
+pub async fn get_post_parent(
+    State(state): State<PostState>,
+    Form(params): Form<GetPostParentParams>,
+) -> Option<i32> {
+    state.post_service.get_parent_post(params.post_id).await
 }

@@ -54,18 +54,18 @@ impl NotificationRepository {
             .map_err(Into::into)
     }
 
-    pub async fn find_all_by_receiver_and_read(
-        &self,
-        receiver: &str,
-        read: bool,
-    ) -> Result<Vec<Notification>, ApiError> {
-        Entity::find()
-            .filter(Cols::NtfReceiver.eq(receiver))
-            .filter(Cols::NtfRead.eq(read))
-            .all(self.db_conn.get_db())
-            .await
-            .map_err(Into::into)
-    }
+    // pub async fn find_all_by_receiver_and_read(
+    //     &self,
+    //     receiver: &str,
+    //     read: bool,
+    // ) -> Result<Vec<Notification>, ApiError> {
+    //     Entity::find()
+    //         .filter(Cols::NtfReceiver.eq(receiver))
+    //         .filter(Cols::NtfRead.eq(read))
+    //         .all(self.db_conn.get_db())
+    //         .await
+    //         .map_err(Into::into)
+    // }
 
     pub async fn delete_all_by_receiver(&self, receiver: &str) -> Result<(), ApiError> {
         Entity::delete_many()
