@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 /// 已上传的作业
 #[derive(Debug, Clone, Default, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "homework_uploaded")]
-#[serde(rename_all = "camelCase")]
+#[serde(default, rename_all(serialize = "camelCase"))]
 pub struct Model {
     /// 学期(主键+外键)
     #[sea_orm(primary_key)]

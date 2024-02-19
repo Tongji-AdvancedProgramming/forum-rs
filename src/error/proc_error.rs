@@ -1,5 +1,6 @@
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
+use log::error;
 use sea_orm::DbErr;
 
 use thiserror::Error;
@@ -17,7 +18,8 @@ pub enum ProcessError {
 }
 
 impl From<DbErr> for ProcessError {
-    fn from(_: DbErr) -> Self {
+    fn from(value: DbErr) -> Self {
+        error!("sea_orm error occurred: {}", value);
         ProcessError::SeaOrmDatabaseError
     }
 }

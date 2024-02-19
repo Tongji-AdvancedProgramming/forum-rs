@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 /// 发帖信息表
 #[derive(Debug, Clone, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "post")]
-#[serde(rename_all = "camelCase")]
+#[serde(default, rename_all(serialize = "camelCase"))]
 pub struct Model {
     /// ID(主键,自动增长)
     #[sea_orm(primary_key)]
@@ -16,7 +16,7 @@ pub struct Model {
 
     /// 课程序号(对应course中的course_code 注意:不是外键关系,但要检查是否存在)
     #[sea_orm(column_name = "post_ccode")]
-    #[serde(rename = "postCcode")]
+    #[serde(rename(serialize = "postCcode", deserialize = "post_ccode"))]
     pub post_course_code: String,
 
     /// 对应的具体作业的序号
@@ -24,8 +24,6 @@ pub struct Model {
     //  如果本项为空但week和/或chapter不为-1，则表示帖子为周总体问题或章节总体问题
     //  <p>
     //  如果本项与week/chapter皆为-1，则表示帖子为学期总体问题
-    #[sea_orm(column_name = "post_hwid")]
-    #[serde(rename = "postHwid")]
     pub post_hw_id: i16,
 
     /// 布置周(课程的整体问题则周次为-1)
@@ -50,7 +48,7 @@ pub struct Model {
 
     /// 发帖人学号
     #[sea_orm(column_name = "post_sno")]
-    #[serde(rename = "postSno")]
+    #[serde(rename(serialize = "postSno", deserialize = "post_sno"))]
     pub post_sender_no: String,
 
     /// 优先级(从'0'~'9' 依次递增,帖子显示是按优先级顺序,相同优先级按发帖时间,可由管理员手工置位进行调整)

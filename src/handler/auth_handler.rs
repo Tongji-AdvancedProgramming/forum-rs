@@ -2,9 +2,9 @@ pub mod post {
     use axum::extract::State;
     use axum::http::HeaderMap;
     use axum::response::{IntoResponse, Response};
-    use axum::Form;
     use axum_client_ip::SecureClientIp;
     use axum_login::AuthSession;
+    use axum_typed_multipart::TypedMultipart;
     use easy_captcha::extension::axum_tower_sessions::CaptchaAxumTowerSessionStaticExt;
     use easy_captcha::extension::CaptchaUtil;
     use tower_sessions::Session;
@@ -37,7 +37,7 @@ pub mod post {
         session: Session,
         headers: HeaderMap,
         SecureClientIp(ip_addr): SecureClientIp,
-        Form(creds): Form<Credentials>,
+        TypedMultipart(creds): TypedMultipart<Credentials>,
     ) -> Result<Response, AuthError> {
         let result = {
             if creds.code.is_empty() {

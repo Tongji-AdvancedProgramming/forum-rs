@@ -4,21 +4,23 @@ use crate::error::param_error::ParameterError::InvalidParameter;
 use crate::error::proc_error::ProcessError;
 use crate::service::post_service::GetPostsResult;
 use crate::{error::auth_error::AuthError, service::post_service::PostServiceTrait};
-use axum::{extract::State, Form};
+use axum::extract::Query;
+use axum::extract::State;
 use axum_client_ip::SecureClientIp;
-use axum_extra::extract::Form as ExForm;
+use axum_extra::extract::Query as ExQuery;
 use axum_login::{AuthUser, AuthzBackend};
+use axum_typed_multipart::{TryFromMultipart, TypedMultipart};
 use forum_macros::forum_handler;
 use forum_utils::encoding_helper::EncodingHelper;
 use serde::{Deserialize, Serialize};
-use utoipa::{IntoParams, ToResponse};
+use utoipa::{IntoParams, ToResponse, ToSchema};
 
 use crate::state::post_state::PostState;
 
 use super::AuthSession;
 
-#[derive(Debug, Clone, Deserialize, IntoParams)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, TryFromMultipart, IntoParams)]
+#[try_from_multipart(rename_all = "camelCase")]
 pub struct AddPostParams {
     /// 板块Id
     pub board_id: String,
@@ -31,12 +33,21 @@ pub struct AddPostParams {
 }
 
 /// 发布帖子
+#[utoipa::path(
+    post,
+    path = "/post",
+    tag = "Post",
+    responses(
+        (status = 200, body = inline(i32))
+    ),
+    params(AddPostParams),
+)]
 #[forum_handler]
 pub async fn add_post(
     State(state): State<PostState>,
     auth_session: AuthSession,
     SecureClientIp(ip_addr): SecureClientIp,
-    Form(params): Form<AddPostParams>,
+    TypedMultipart(params): TypedMultipart<AddPostParams>,
 ) -> i32 {
     let content = EncodingHelper::utf2gbk(&params.content);
 
@@ -53,8 +64,8 @@ pub async fn add_post(
         .await
 }
 
-#[derive(Debug, Clone, Deserialize, IntoParams)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, TryFromMultipart, IntoParams)]
+#[try_from_multipart(rename_all = "camelCase")]
 pub struct AddReplyParams {
     /// 帖子Id
     pub post_id: i32,
@@ -64,12 +75,13 @@ pub struct AddReplyParams {
 }
 
 /// 发送回帖
+#[utoipa::path(post, path = "/post/reply", tag = "Post", params(AddReplyParams))]
 #[forum_handler]
 pub async fn add_reply(
     State(state): State<PostState>,
     auth_session: AuthSession,
     SecureClientIp(ip_addr): SecureClientIp,
-    Form(params): Form<AddReplyParams>,
+    TypedMultipart(params): TypedMultipart<AddReplyParams>,
 ) {
     let content = EncodingHelper::utf2gbk(&params.reply_content);
 
@@ -80,8 +92,8 @@ pub async fn add_reply(
         .await
 }
 
-#[derive(Debug, Clone, Deserialize, IntoParams)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, TryFromMultipart, IntoParams)]
+#[try_from_multipart(rename_all = "camelCase")]
 pub struct EditPostParams {
     /// 帖子Id
     pub post_id: i32,
@@ -90,12 +102,14 @@ pub struct EditPostParams {
     pub content: String,
 }
 
+/// 编辑帖子或回复
+#[utoipa::path(put, path = "/post", tag = "Post", params(AddReplyParams))]
 #[forum_handler]
 pub async fn edit_post(
     State(state): State<PostState>,
     auth_session: AuthSession,
     SecureClientIp(ip_addr): SecureClientIp,
-    Form(params): Form<EditPostParams>,
+    TypedMultipart(params): TypedMultipart<EditPostParams>,
 ) {
     let content = EncodingHelper::utf2gbk(&params.content);
 
@@ -114,24 +128,25 @@ pub async fn edit_post(
     }
 }
 
-#[derive(Debug, Clone, Deserialize, IntoParams)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, TryFromMultipart, IntoParams)]
+#[try_from_multipart(rename_all = "camelCase")]
 pub struct SetPostTagsParams {
     /// 帖子Id
     pub post_id: Vec<i32>,
 
     /// 标签
-    #[serde(default)]
+    #[try_from_multipart(default)]
     pub tag: Vec<i32>,
 }
 
 /// 设置帖子标签
+#[utoipa::path(put, path = "/post/tag", tag = "Post", params(SetPostTagsParams))]
 #[forum_handler]
 pub async fn set_post_tags(
     State(state): State<PostState>,
     auth_session: AuthSession,
     SecureClientIp(ip_addr): SecureClientIp,
-    ExForm(params): ExForm<SetPostTagsParams>,
+    TypedMultipart(params): TypedMultipart<SetPostTagsParams>,
 ) {
     let user_id = auth_session.user.unwrap().id();
 
@@ -152,24 +167,30 @@ pub async fn set_post_tags(
     }
 }
 
-#[derive(Debug, Clone, Deserialize, IntoParams)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, TryFromMultipart, IntoParams)]
+#[try_from_multipart(rename_all = "camelCase")]
 pub struct SetPostPriorityParams {
     /// 帖子Id
     pub post_id: Vec<i32>,
 
     /// 优先级
-    #[serde(default)]
+    #[try_from_multipart(default)]
     pub priority: i32,
 }
 
 /// 设置帖子优先级
+#[utoipa::path(
+    put,
+    path = "/post/priority",
+    tag = "Post",
+    params(SetPostPriorityParams)
+)]
 #[forum_handler]
 pub async fn set_post_priority(
     State(state): State<PostState>,
     auth_session: AuthSession,
     SecureClientIp(ip_addr): SecureClientIp,
-    ExForm(params): ExForm<SetPostPriorityParams>,
+    TypedMultipart(params): TypedMultipart<SetPostPriorityParams>,
 ) {
     let user_id = auth_session.user.unwrap().id();
 
@@ -202,12 +223,13 @@ pub struct DeletePostsParams {
 }
 
 /// 删除帖子或回复
+#[utoipa::path(delete, path = "/post", tag = "Post", params(DeletePostsParams))]
 #[forum_handler]
 pub fn delete_posts(
     State(state): State<PostState>,
     auth_session: AuthSession,
     SecureClientIp(ip_addr): SecureClientIp,
-    ExForm(params): ExForm<DeletePostsParams>,
+    ExQuery(params): ExQuery<DeletePostsParams>,
 ) {
     let user_id = &auth_session.user.as_ref().unwrap().id();
 
@@ -247,7 +269,7 @@ pub struct ListPostsParams {
     pub page_index: u64,
 }
 
-#[derive(Debug, Clone, Serialize, ToResponse)]
+#[derive(Debug, Clone, Serialize, ToResponse, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct ListPostsResult {
     pub total_count: u64,
@@ -255,11 +277,20 @@ pub struct ListPostsResult {
 }
 
 /// 列出帖子
+#[utoipa::path(
+    get,
+    path = "/post/list",
+    tag = "Post",
+    responses(
+        (status = 200, body = inline(ListPostsResult))
+    ),
+    params(ListPostsParams)
+)]
 #[forum_handler]
 pub async fn list_posts(
     State(state): State<PostState>,
     auth_session: AuthSession,
-    Form(params): Form<ListPostsParams>,
+    Query(params): Query<ListPostsParams>,
 ) -> ListPostsResult {
     let user_id = &auth_session.user.as_ref().unwrap().id();
     let tags = urlencoding::decode(&params.tags).map_err(|_| InvalidParameter("传入的tag无效"))?;
@@ -312,11 +343,12 @@ pub struct GetPostsParams {
 /// 显示帖子（含回帖等）
 ///
 /// 用于在帖子页中使用，包含回帖等内容
+#[utoipa::path(get, path = "/post", tag = "Post", params(GetPostsParams))]
 #[forum_handler]
 pub async fn get_posts(
     State(state): State<PostState>,
     auth_session: AuthSession,
-    Form(params): Form<GetPostsParams>,
+    Query(params): Query<GetPostsParams>,
 ) -> GetPostsResult {
     if params.show_hidden
         && !auth_session
@@ -352,10 +384,11 @@ pub struct GetPostParentParams {
 /// 查询帖子的父亲帖子
 ///
 /// 用于跳转的时候准确跳转到父亲帖子
+#[utoipa::path(get, path = "/post/parent", tag = "Post", params(GetPostParentParams))]
 #[forum_handler]
 pub async fn get_post_parent(
     State(state): State<PostState>,
-    Form(params): Form<GetPostParentParams>,
+    Query(params): Query<GetPostParentParams>,
 ) -> Option<i32> {
     state.post_service.get_parent_post(params.post_id).await
 }

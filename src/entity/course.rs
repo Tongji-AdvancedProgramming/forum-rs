@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 /// 课程信息表
 #[derive(Debug, Clone, Default, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "course")]
-#[serde(rename_all = "camelCase")]
+#[serde(default, rename_all(serialize = "camelCase"))]
 pub struct Model {
     /// 学期(主键+外键)
     #[sea_orm(primary_key)]
@@ -19,12 +19,12 @@ pub struct Model {
 
     /// 教务系统中的全名
     #[sea_orm(column_name = "course_fname")]
-    #[serde(rename = "courseFname")]
+    #[serde(rename(serialize = "courseFname", deserialize = "course_fname"))]
     pub course_full_name: String,
 
     /// 课程简称
     #[sea_orm(column_name = "course_sname")]
-    #[serde(rename = "courseSname")]
+    #[serde(rename(serialize = "courseSname", deserialize = "course_sname"))]
     pub course_short_name: String,
 
     /// 课程类别(1-基础 2-专业，暂时无用，未来和学校的课程编码匹配)

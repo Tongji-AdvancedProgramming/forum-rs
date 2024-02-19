@@ -30,8 +30,10 @@ impl UserService {
             .select_only()
             .column(student::Column::StuUserLevel)
             .filter(student::Column::StuNo.eq(id))
+            .into_json()
             .one(self.db_conn.get_db())
-            .await?
+            .await
+            .map(|v| v.map(|v| serde_json::from_value::<student::Model>(v).unwrap()))?
             .ok_or(ProcessError::GeneralError("未找到指定学生"))?;
 
         let user_level = user.stu_user_level.parse::<i32>().unwrap();

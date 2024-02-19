@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 /// 发帖日志表
 #[derive(Debug, Clone, Default, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "log_post")]
-#[serde(rename_all = "camelCase")]
+#[serde(default, rename_all(serialize = "camelCase"))]
 pub struct Model {
     /// 序号(主键,自动增长)
     #[sea_orm(primary_key)]
@@ -13,12 +13,12 @@ pub struct Model {
 
     /// 帖子id
     #[sea_orm(column_name = "log_post_postid")]
-    #[serde(rename = "logPostPostid")]
+    #[serde(rename(serialize = "logPostPostid", deserialize = "log_post_postid"))]
     pub log_post_post_id: i32,
 
     /// 操作人学号
     #[sea_orm(column_name = "log_post_opno")]
-    #[serde(rename = "logPostOpno")]
+    #[serde(rename(serialize = "logPostOpno", deserialize = "log_post_opno"))]
     pub log_post_op_no: String,
 
     /// 登录IP

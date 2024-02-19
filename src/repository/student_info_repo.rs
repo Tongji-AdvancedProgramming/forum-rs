@@ -48,8 +48,10 @@ impl StudentInfoRepositoryTrait for StudentInfoRepository {
             .select_only()
             .column(student::Column::StuName)
             .filter(student::Column::StuNo.eq(stu_no))
+            .into_json()
             .one(self.db_conn.get_db())
             .await
+            .map(|v| v.map(|v| serde_json::from_value::<student::Model>(v).unwrap()))
     }
 
     async fn get_student_short_info(
@@ -57,10 +59,10 @@ impl StudentInfoRepositoryTrait for StudentInfoRepository {
         stu_no: &str,
     ) -> Result<Option<StudentShortInfo>, Self::Error> {
         let sql = r#"
-        select si.nickname       as nickName,
+        select si.nickname       as nick_name,
                si.description    as description,
-               s.stu_name        as realName,
-               s.stu_no          as stuNo,
+               s.stu_name        as real_name,
+               s.stu_no          as stu_no,
                s.stu_class_sname as major,
                s.stu_userlevel   as role
         from student s

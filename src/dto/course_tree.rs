@@ -9,7 +9,7 @@ pub struct Course {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, utoipa::ToSchema)]
 pub struct Week {
-    pub number: i32,
+    pub number: i8,
     pub content: String,
     pub homeworks: Vec<homework::Model>,
 }

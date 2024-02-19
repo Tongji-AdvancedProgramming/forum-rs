@@ -220,6 +220,31 @@ impl PostRepository {
     }
 }
 
+trait SelectConsumer {
+    type Error;
+    async fn select_consumer_one(self, db_conn: &Arc<Db>) -> Result<Option<Post>, Self::Error>;
+    async fn select_consumer_many(self, db_conn: &Arc<Db>) -> Result<Vec<Post>, Self::Error>;
+}
+
+impl SelectConsumer for Select<Entity> {
+    type Error = sea_orm::DbErr;
+
+    async fn select_consumer_one(self, db_conn: &Arc<Db>) -> Result<Option<Post>, Self::Error> {
+        self.into_json()
+            .one(db_conn.get_db())
+            .await
+            .map(|v| v.map(|v| serde_json::from_value(v).unwrap()))
+    }
+
+    async fn select_consumer_many(self, db_conn: &Arc<Db>) -> Result<Vec<Post>, Self::Error> {
+        self.into_json().all(db_conn.get_db()).await.map(|v| {
+            v.into_iter()
+                .map(|v| serde_json::from_value(v).unwrap())
+                .collect()
+        })
+    }
+}
+
 #[async_trait]
 impl PostRepositoryTrait for PostRepository {
     type Error = sea_orm::DbErr;
@@ -247,7 +272,7 @@ impl PostRepositoryTrait for PostRepository {
             .order_by(Col::PostId, Order::Desc)
             .offset(offset)
             .limit(limit)
-            .all(self.db.get_db())
+            .select_consumer_many(&self.db)
             .await
     }
 
@@ -274,7 +299,7 @@ impl PostRepositoryTrait for PostRepository {
             .order_by(Col::PostId, Order::Desc)
             .offset(offset)
             .limit(limit)
-            .all(self.db.get_db())
+            .select_consumer_many(&self.db)
             .await
     }
 
@@ -300,7 +325,7 @@ impl PostRepositoryTrait for PostRepository {
             .order_by(Col::PostId, Order::Desc)
             .offset(offset)
             .limit(limit)
-            .all(self.db.get_db())
+            .select_consumer_many(&self.db)
             .await
     }
 
@@ -324,7 +349,7 @@ impl PostRepositoryTrait for PostRepository {
             .order_by(Col::PostId, Order::Desc)
             .offset(offset)
             .limit(limit)
-            .all(self.db.get_db())
+            .select_consumer_many(&self.db)
             .await
     }
 
@@ -350,7 +375,7 @@ impl PostRepositoryTrait for PostRepository {
             .order_by(Col::PostId, Order::Desc)
             .offset(offset)
             .limit(limit)
-            .all(self.db.get_db())
+            .select_consumer_many(&self.db)
             .await
     }
 
@@ -453,7 +478,7 @@ impl PostRepositoryTrait for PostRepository {
     async fn get_post_without_content(&self, post_id: i32) -> Result<Option<Post>, Self::Error> {
         Self::select_head(false)
             .filter(Col::PostId.eq(post_id))
-            .one(self.db.get_db())
+            .select_consumer_one(&self.db)
             .await
     }
 
@@ -472,14 +497,18 @@ impl PostRepositoryTrait for PostRepository {
         order by post_date
         "#;
 
-        Entity::find()
-            .from_raw_sql(Statement::from_sql_and_values(
-                DbBackend::MySql,
-                sql,
-                [post_id.into()],
-            ))
-            .all(self.db.get_db())
-            .await
+        JsonValue::find_by_statement(Statement::from_sql_and_values(
+            DbBackend::MySql,
+            sql,
+            [post_id.into()],
+        ))
+        .all(self.db.get_db())
+        .await
+        .map(|v| {
+            v.into_iter()
+                .map(|v| serde_json::from_value(v).unwrap())
+                .collect()
+        })
     }
 
     /// 递归查询某个帖子的父帖子
@@ -498,14 +527,14 @@ impl PostRepositoryTrait for PostRepository {
         limit 1
         "#;
 
-        Entity::find()
-            .from_raw_sql(Statement::from_sql_and_values(
-                DbBackend::MySql,
-                sql,
-                [post_id.into()],
-            ))
-            .one(self.db.get_db())
-            .await
+        JsonValue::find_by_statement(Statement::from_sql_and_values(
+            DbBackend::MySql,
+            sql,
+            [post_id.into()],
+        ))
+        .one(self.db.get_db())
+        .await
+        .map(|v| v.map(|v| serde_json::from_value(v).unwrap()))
     }
 
     async fn get_post_sender_user_level(&self, post_id: i32) -> Result<Option<i64>, Self::Error> {

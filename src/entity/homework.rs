@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 /// 作业
 #[derive(Debug, Clone, Default, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "homework")]
-#[serde(rename_all = "camelCase")]
+#[serde(default, rename_all(serialize = "camelCase"))]
 pub struct Model {
     /// 学期(主键+外键)
     #[sea_orm(primary_key)]
@@ -13,7 +13,7 @@ pub struct Model {
 
     /// 作业课程编号
     #[sea_orm(column_name = "hw_ccode")]
-    #[serde(rename = "hwCcode")]
+    #[serde(rename(serialize = "hwCcode", deserialize = "hw_ccode"))]
     pub hw_course_code: String,
 
     /// 作业序号(主键)
@@ -34,12 +34,12 @@ pub struct Model {
 
     /// 作业提交开始时间
     #[sea_orm(column_name = "hw_bdate")]
-    #[serde(rename = "hwBdate")]
+    #[serde(rename(serialize = "hwBdate", deserialize = "hw_bdate"))]
     pub hw_begin_date: NaiveDateTime,
 
     /// 作业提交结束时间
     #[sea_orm(column_name = "hw_edate")]
-    #[serde(rename = "hwEdate")]
+    #[serde(rename(serialize = "hwEdate", deserialize = "hw_edate"))]
     pub hw_end_date: NaiveDateTime,
 
     /// 本作业加入论坛的时间

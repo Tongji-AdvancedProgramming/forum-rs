@@ -47,7 +47,7 @@ impl BoardServiceTrait for BoardService {
         // 识别学期和课程
         let term = tokens[0];
         let course_code = tokens[1];
-        if !term.is_numeric() || !course_code.is_numeric() {
+        if !course_code.is_numeric() {
             return Err(ParameterError::InvalidParameter(
                 "传入的ID格式不正确：学期或课程代码不是纯数字".into(),
             ));

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 /// 用户登录日志表
 #[derive(Debug, Clone, Default, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "log_login")]
-#[serde(rename_all = "camelCase")]
+#[serde(default, rename_all(serialize = "camelCase"))]
 pub struct Model {
     /// 序号(主键,自动增长)
     #[sea_orm(primary_key)]

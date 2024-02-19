@@ -3,7 +3,7 @@ use futures::future::ready;
 use futures::{stream, StreamExt};
 use moka::future::{Cache, CacheBuilder};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::sync::Arc;
 use std::time::Duration;
 use std::vec;
@@ -121,8 +121,8 @@ impl CourseService {
             .await?;
 
         // 加工数据
-        let week_homework_map: HashMap<_, Vec<_>> =
-            data.into_iter().fold(HashMap::new(), |mut acc, hw| {
+        let week_homework_map: BTreeMap<_, Vec<_>> =
+            data.into_iter().fold(BTreeMap::new(), |mut acc, hw| {
                 acc.entry(hw.hw_week).or_insert_with(Vec::new).push(hw);
                 acc
             });
@@ -134,7 +134,9 @@ impl CourseService {
                 let chapters: Vec<_> = homework
                     .iter()
                     .map(|hw| hw.hw_chapter)
-                    .filter(|c| c < &20)
+                    .filter(|&c| c < 20)
+                    .collect::<BTreeSet<_>>()
+                    .into_iter()
                     .map(|c| c.to_string())
                     .collect();
 
@@ -144,7 +146,7 @@ impl CourseService {
                 }
 
                 Week {
-                    number: 1,
+                    number: week_index,
                     homeworks: homework,
                     content: week_title,
                 }
@@ -250,7 +252,7 @@ impl CourseServiceTrait for CourseService {
         // 将课程按照课程代码分类
         let course_code_map: HashMap<_, Vec<_>> =
             courses.into_iter().fold(HashMap::new(), |mut acc, course| {
-                acc.entry((course.course_no.clone(), course.course_code.clone()))
+                acc.entry((course.course_term.clone(), course.course_code.clone()))
                     .or_insert_with(Vec::new)
                     .push(course);
                 acc
@@ -262,7 +264,7 @@ impl CourseServiceTrait for CourseService {
                 let courses_stream = stream::iter(course_code_map)
                     .filter(|(_, v)| ready(!v.is_empty()))
                     .then(|(_, v)| async move {
-                        let course = course::Model {
+                        let course = Model {
                             course_short_name: "".into(),
                             course_no: "".into(),
                             ..v.first().cloned().unwrap()

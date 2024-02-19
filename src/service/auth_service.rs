@@ -5,6 +5,7 @@ use crate::entity::student::Model as Student;
 use crate::repository::user_repo::{UserRepository, UserRepositoryTrait};
 use async_trait::async_trait;
 use axum_login::{AuthUser, AuthnBackend, AuthzBackend, UserId};
+use axum_typed_multipart::TryFromMultipart;
 use easy_hex::Hex;
 use md5::{Digest, Md5};
 use serde::Deserialize;
@@ -34,7 +35,7 @@ impl AuthUser for Student {
     }
 }
 
-#[derive(Debug, Clone, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Deserialize, ToSchema, TryFromMultipart)]
 pub struct Credentials {
     pub username: String,
     pub password: String,

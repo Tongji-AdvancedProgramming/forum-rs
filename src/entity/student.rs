@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Deserialize, Default, Serialize, utoipa::ToSchema, DeriveEntityModel)]
 #[sea_orm(table_name = "student")]
-#[serde(rename_all = "camelCase")]
+#[serde(default, rename_all(serialize = "camelCase"))]
 pub struct Model {
     /// 学期(与term表有外键关系)
     #[sea_orm(primary_key)]
@@ -28,17 +28,17 @@ pub struct Model {
 
     /// 专业/班级全称
     #[sea_orm(column_name = "stu_class_fname")]
-    #[serde(rename = "stuClassFname")]
+    #[serde(rename(serialize = "stuClassFname", deserialize = "stu_class_fname"))]
     pub stu_class_full_name: String,
 
     /// 专业/班级简称
     #[sea_orm(column_name = "stu_class_sname")]
-    #[serde(rename = "stuClassSname")]
+    #[serde(rename(serialize = "stuClassSname", deserialize = "stu_class_sname"))]
     pub stu_class_short_name: String,
 
     /// 学生用户等级(0:普通用户 1:助教 5:管理员 9:超级用户)
     #[sea_orm(column_name = "stu_userlevel")]
-    #[serde(rename = "stuUserlevel")]
+    #[serde(rename(serialize = "stuUserlevel", deserialize = "stu_userlevel"))]
     pub stu_user_level: String,
 
     /// 账号是否启用('0':禁止登录 '1':允许登录 注意:enum不要当int处理)

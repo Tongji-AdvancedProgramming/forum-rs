@@ -10,6 +10,7 @@ use crate::{
 use super::AuthSession;
 
 /// 上传图片，注册用户可调用
+#[utoipa::path(post, path = "/upload", tag = "Upload")]
 #[forum_handler]
 pub async fn add_image(
     State(state): State<UploadState>,

@@ -2,6 +2,7 @@ use crate::error::auth_error::AuthError;
 use crate::error::limit_error::LimitError;
 use crate::error::param_error::ParameterError;
 use axum::response::{IntoResponse, Response};
+use log::error;
 use sea_orm::DbErr;
 use thiserror::Error;
 
@@ -31,7 +32,8 @@ impl IntoResponse for ApiError {
 }
 
 impl From<DbErr> for ApiError {
-    fn from(_value: DbErr) -> Self {
+    fn from(value: DbErr) -> Self {
+        error!("sea_orm error occurred: {}", value);
         Self::ProcessError(ProcessError::SeaOrmDatabaseError)
     }
 }

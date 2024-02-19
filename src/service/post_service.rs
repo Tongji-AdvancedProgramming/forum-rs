@@ -8,6 +8,7 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, NotSet, QueryFilter, QuerySelect,
 };
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use crate::entity::notification;
 use crate::error::param_error::ParameterError::InvalidParameter;
@@ -262,8 +263,10 @@ impl PostServiceTrait for PostService {
             .select_only()
             .column(student::Column::StuUserLevel)
             .filter(student::Column::StuNo.eq(user_id))
+            .into_json()
             .one(self.db_conn.get_db())
             .await?
+            .map(|v| serde_json::from_value::<student::Model>(v).unwrap())
             .ok_or(ParameterError::InvalidParameter("无效的用户id"))?;
 
         Ok(user.stu_user_level.parse::<i64>().unwrap_or(0) < post_level)
@@ -284,8 +287,10 @@ impl PostServiceTrait for PostService {
             .select_only()
             .column(student::Column::StuUserLevel)
             .filter(student::Column::StuNo.eq(user_id))
+            .into_json()
             .one(self.db_conn.get_db())
-            .await?
+            .await
+            .map(|v| v.map(|v| serde_json::from_value::<student::Model>(v).unwrap()))?
             .ok_or(ParameterError::InvalidParameter("无效的用户id"))?;
 
         Ok(user.stu_user_level.parse::<i64>().unwrap_or(0) < post_level)

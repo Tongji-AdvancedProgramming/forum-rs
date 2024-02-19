@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 /// 论坛运行所需要的其他数据
 #[derive(Debug, Clone, Default, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "student_info")]
-#[serde(rename_all = "camelCase")]
+#[serde(default, rename_all(serialize = "camelCase"))]
 pub struct Model {
     /// 学生学号
     #[sea_orm(primary_key)]
