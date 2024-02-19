@@ -1,6 +1,7 @@
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use log::error;
+use minio::s3::error::Error as MinioErr;
 use sea_orm::DbErr;
 
 use thiserror::Error;
@@ -9,25 +10,23 @@ use crate::response::api_response::ApiResponse;
 
 #[derive(Error, Debug)]
 pub enum ProcessError {
-    #[error("ORM框架报数据库错误")]
-    SeaOrmDatabaseError,
-    #[error("Minio执行错误")]
-    MinioError,
+    #[error("ORM框架报数据库错误:{0}")]
+    SeaOrmDatabaseError(DbErr),
+    #[error("Minio执行错误:{0}")]
+    MinioError(MinioErr),
     #[error("{0}")]
     GeneralError(&'static str),
 }
 
 impl From<DbErr> for ProcessError {
     fn from(value: DbErr) -> Self {
-        error!("sea_orm error occurred: {}", value);
-        ProcessError::SeaOrmDatabaseError
+        ProcessError::SeaOrmDatabaseError(value)
     }
 }
 
-use minio::s3::error::Error as MinioErr;
 impl From<MinioErr> for ProcessError {
-    fn from(_: MinioErr) -> Self {
-        ProcessError::MinioError
+    fn from(value: MinioErr) -> Self {
+        ProcessError::MinioError(value)
     }
 }
 

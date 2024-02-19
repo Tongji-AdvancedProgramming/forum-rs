@@ -20,7 +20,7 @@ pub enum PostLocation {
 
 /// 板块
 #[derive(Debug, Clone, Deserialize, Serialize, utoipa::ToSchema)]
-#[serde(rename_all(serialize = "camelCase"))]
+#[serde(rename_all = "camelCase")]
 pub struct Board {
     /// ID串
     pub id: String,

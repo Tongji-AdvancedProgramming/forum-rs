@@ -15,7 +15,7 @@ pub mod get {
     };
 
     #[derive(Debug, Clone, Deserialize, ToSchema, IntoParams)]
-    #[serde(rename_all(serialize = "camelCase"))]
+    #[serde(rename_all = "camelCase")]
     pub struct HomeworkParam {
         pub term: String,
         pub course_no: String,
@@ -44,7 +44,7 @@ pub mod get {
     }
 
     #[derive(Debug, Clone, Deserialize, ToSchema, IntoParams)]
-    #[serde(rename_all(serialize = "camelCase"))]
+    #[serde(rename_all = "camelCase")]
     pub struct HomeworkUploadedParam {
         pub board_id: String,
         pub with_hidden: bool,

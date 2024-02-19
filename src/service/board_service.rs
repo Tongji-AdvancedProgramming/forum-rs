@@ -88,13 +88,13 @@ impl BoardServiceTrait for BoardService {
         // 制作成Board结构体
         let course = Some(course::Model {
             course_term: term.into(),
-            course_code: course_code.into(),
+            course_code: Some(course_code.into()),
             ..Default::default()
         });
 
         let homework = hw_id.map(|hw_id| homework::Model {
             hw_term: term.into(),
-            hw_course_code: course_code.into(),
+            hw_course_code: Some(course_code.into()),
             hw_id: hw_id.parse().unwrap(),
             ..Default::default()
         });
@@ -115,7 +115,7 @@ impl BoardServiceTrait for BoardService {
         let ref cr = board.course.unwrap();
         let course = course::Entity::find()
             .filter(course::Column::CourseTerm.eq(&cr.course_term))
-            .filter(course::Column::CourseCode.eq(&cr.course_code))
+            .filter(course::Column::CourseCode.eq(cr.course_code.as_ref().unwrap()))
             .one(self.db_conn.get_db())
             .await?;
 
@@ -124,7 +124,7 @@ impl BoardServiceTrait for BoardService {
             let ref hw = board.homework.unwrap();
             homework::Entity::find()
                 .filter(homework::Column::HwTerm.eq(&hw.hw_term))
-                .filter(homework::Column::HwCourseCode.eq(&hw.hw_course_code))
+                .filter(homework::Column::HwCourseCode.eq(hw.hw_course_code.as_ref().unwrap()))
                 .filter(homework::Column::HwId.eq(hw.hw_id))
                 .one(self.db_conn.get_db())
                 .await?

@@ -48,10 +48,8 @@ impl StudentInfoRepositoryTrait for StudentInfoRepository {
             .select_only()
             .column(student::Column::StuName)
             .filter(student::Column::StuNo.eq(stu_no))
-            .into_json()
             .one(self.db_conn.get_db())
             .await
-            .map(|v| v.map(|v| serde_json::from_value::<student::Model>(v).unwrap()))
     }
 
     async fn get_student_short_info(

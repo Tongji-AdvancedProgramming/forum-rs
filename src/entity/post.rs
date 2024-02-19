@@ -5,32 +5,32 @@ use serde::{Deserialize, Serialize};
 /// 发帖信息表
 #[derive(Debug, Clone, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "post")]
-#[serde(default, rename_all(serialize = "camelCase"))]
+#[serde(default, rename_all = "camelCase")]
 pub struct Model {
     /// ID(主键,自动增长)
     #[sea_orm(primary_key)]
     pub post_id: i32,
 
     /// 学期(外键)
-    pub post_term: String,
+    pub post_term: Option<String>,
 
     /// 课程序号(对应course中的course_code 注意:不是外键关系,但要检查是否存在)
     #[sea_orm(column_name = "post_ccode")]
-    #[serde(rename(serialize = "postCcode", deserialize = "post_ccode"))]
-    pub post_course_code: String,
+    #[serde(rename = "postCcode")]
+    pub post_course_code: Option<String>,
 
     /// 对应的具体作业的序号
     //  <p>
     //  如果本项为空但week和/或chapter不为-1，则表示帖子为周总体问题或章节总体问题
     //  <p>
     //  如果本项与week/chapter皆为-1，则表示帖子为学期总体问题
-    pub post_hw_id: i16,
+    pub post_hw_id: Option<i16>,
 
     /// 布置周(课程的整体问题则周次为-1)
-    pub post_week: i8,
+    pub post_week: Option<i8>,
 
     /// 章节(课程的整体问题则章节为-1)
-    pub post_chapter: i8,
+    pub post_chapter: Option<i8>,
 
     /// 对应帖子的id(与post_id是外键关系)
     //  <p>
@@ -44,45 +44,45 @@ pub struct Model {
     //  以 post_term + post_ccode + post_hwup_or_hw_id 为基准汇聚,具体排序规则?
     //  <p>
     //  本字段是否多余?
-    pub post_type: String,
+    pub post_type: Option<String>,
 
     /// 发帖人学号
     #[sea_orm(column_name = "post_sno")]
-    #[serde(rename(serialize = "postSno", deserialize = "post_sno"))]
-    pub post_sender_no: String,
+    #[serde(rename = "postSno")]
+    pub post_sender_no: Option<String>,
 
     /// 优先级(从'0'~'9' 依次递增,帖子显示是按优先级顺序,相同优先级按发帖时间,可由管理员手工置位进行调整)
-    pub post_priority: String,
+    pub post_priority: Option<String>,
 
     /// 约定的tag 1标记(0:此标记未置位 1:此标记已置位)
-    pub post_tag_01: String,
+    pub post_tag_01: Option<String>,
 
     /// 约定的tag 2标记(0:此标记未置位 1:此标记已置位)
-    pub post_tag_02: String,
+    pub post_tag_02: Option<String>,
 
     /// 约定的tag 3标记(0:此标记未置位 1:此标记已置位)
-    pub post_tag_03: String,
+    pub post_tag_03: Option<String>,
 
     /// 约定的tag 4标记(0:此标记未置位 1:此标记已置位)
-    pub post_tag_04: String,
+    pub post_tag_04: Option<String>,
 
     /// 约定的tag 5标记(0:此标记未置位 1:此标记已置位)
-    pub post_tag_05: String,
+    pub post_tag_05: Option<String>,
 
     /// 约定的tag 6标记(0:此标记未置位 1:此标记已置位)
-    pub post_tag_06: String,
+    pub post_tag_06: Option<String>,
 
     /// 约定的tag 7标记(0:此标记未置位 1:此标记已置位)
-    pub post_tag_07: String,
+    pub post_tag_07: Option<String>,
 
     /// 约定的tag 8标记(0:此标记未置位 1:此标记已置位)
-    pub post_tag_08: String,
+    pub post_tag_08: Option<String>,
 
     /// 约定的tag 9标记(0:此标记未置位 1:此标记已置位)
-    pub post_tag_09: String,
+    pub post_tag_09: Option<String>,
 
     /// 约定的tag 10标记(0:此标记未置位 1:此标记已置位)
-    pub post_tag_10: String,
+    pub post_tag_10: Option<String>,
 
     /// 帖子标题
     pub post_title: Option<String>,
@@ -91,10 +91,10 @@ pub struct Model {
     pub post_content: Option<String>,
 
     /// 发帖时间
-    pub post_date: NaiveDateTime,
+    pub post_date: Option<NaiveDateTime>,
 
     /// 帖子是否已删除('0':正常显示 '1':不显示,包括所有的回帖 注意:enum不要当int处理)
-    pub post_is_del: String,
+    pub post_is_del: Option<String>,
 
     /// 备注(预留)
     pub post_comment: Option<String>,
@@ -112,21 +112,21 @@ impl Default for Model {
             post_answer_id: Default::default(),
             post_type: Default::default(),
             post_sender_no: Default::default(),
-            post_priority: "0".into(),
-            post_tag_01: "0".into(),
-            post_tag_02: "0".into(),
-            post_tag_03: "0".into(),
-            post_tag_04: "0".into(),
-            post_tag_05: "0".into(),
-            post_tag_06: "0".into(),
-            post_tag_07: "0".into(),
-            post_tag_08: "0".into(),
-            post_tag_09: "0".into(),
-            post_tag_10: "0".into(),
+            post_priority: Some("0".into()),
+            post_tag_01: Some("0".into()),
+            post_tag_02: Some("0".into()),
+            post_tag_03: Some("0".into()),
+            post_tag_04: Some("0".into()),
+            post_tag_05: Some("0".into()),
+            post_tag_06: Some("0".into()),
+            post_tag_07: Some("0".into()),
+            post_tag_08: Some("0".into()),
+            post_tag_09: Some("0".into()),
+            post_tag_10: Some("0".into()),
             post_title: Default::default(),
             post_content: Default::default(),
             post_date: Default::default(),
-            post_is_del: "0".into(),
+            post_is_del: Some("0".into()),
             post_comment: Default::default(),
         }
     }

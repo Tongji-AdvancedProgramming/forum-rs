@@ -33,7 +33,7 @@ pub async fn get_my_notifications(
 #[derive(Debug, Clone, TryFromMultipart, IntoParams)]
 #[try_from_multipart(rename_all = "camelCase")]
 pub struct ReadMyParams {
-    pub notification_id: i32,
+    pub notification_id: u64,
 }
 
 /// 用户已读通知

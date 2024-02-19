@@ -49,7 +49,9 @@ pub async fn add_post(
     SecureClientIp(ip_addr): SecureClientIp,
     TypedMultipart(params): TypedMultipart<AddPostParams>,
 ) -> i32 {
-    let content = EncodingHelper::utf2gbk(&params.content);
+    if !EncodingHelper::gbk_guard(&params.content) {
+        return Err(InvalidParameter("帖子内容包含非GBK字符").into());
+    }
 
     let user_id = auth_session.user.unwrap().id();
     state
@@ -59,7 +61,7 @@ pub async fn add_post(
             &ip_addr,
             &params.board_id,
             &params.title,
-            &content,
+            &params.content,
         )
         .await
 }
@@ -83,12 +85,14 @@ pub async fn add_reply(
     SecureClientIp(ip_addr): SecureClientIp,
     TypedMultipart(params): TypedMultipart<AddReplyParams>,
 ) {
-    let content = EncodingHelper::utf2gbk(&params.reply_content);
+    if !EncodingHelper::gbk_guard(&params.reply_content) {
+        return Err(InvalidParameter("帖子内容包含非GBK字符").into());
+    }
 
     let user_id = auth_session.user.unwrap().id();
     state
         .post_service
-        .add_reply(&user_id, &ip_addr, params.post_id, &content)
+        .add_reply(&user_id, &ip_addr, params.post_id, &params.reply_content)
         .await
 }
 
@@ -111,7 +115,9 @@ pub async fn edit_post(
     SecureClientIp(ip_addr): SecureClientIp,
     TypedMultipart(params): TypedMultipart<EditPostParams>,
 ) {
-    let content = EncodingHelper::utf2gbk(&params.content);
+    if !EncodingHelper::gbk_guard(&params.content) {
+        return Err(InvalidParameter("帖子内容包含非GBK字符").into());
+    }
 
     let user_id = auth_session.user.unwrap().id();
     if state
@@ -121,21 +127,21 @@ pub async fn edit_post(
     {
         state
             .post_service
-            .edit_post(&user_id, &ip_addr, params.post_id, &content)
+            .edit_post(&user_id, &ip_addr, params.post_id, &params.content)
             .await
     } else {
         Err(AuthError::PermissionDenied("您无权编辑此帖子").into())
     }
 }
 
-#[derive(Debug, Clone, TryFromMultipart, IntoParams)]
-#[try_from_multipart(rename_all = "camelCase")]
+#[derive(Debug, Clone, Deserialize, IntoParams)]
+#[serde(rename_all = "camelCase")]
 pub struct SetPostTagsParams {
     /// 帖子Id
     pub post_id: Vec<i32>,
 
     /// 标签
-    #[try_from_multipart(default)]
+    #[serde(default)]
     pub tag: Vec<i32>,
 }
 
@@ -146,13 +152,13 @@ pub async fn set_post_tags(
     State(state): State<PostState>,
     auth_session: AuthSession,
     SecureClientIp(ip_addr): SecureClientIp,
-    TypedMultipart(params): TypedMultipart<SetPostTagsParams>,
+    ExQuery(params): ExQuery<SetPostTagsParams>,
 ) {
     let user_id = auth_session.user.unwrap().id();
 
     if state
         .post_service
-        .ensure_edit_posts_permission(&user_id, &params.tag)
+        .ensure_edit_posts_permission(&user_id, &params.post_id)
         .await?
     {
         for id in params.post_id {
@@ -167,14 +173,14 @@ pub async fn set_post_tags(
     }
 }
 
-#[derive(Debug, Clone, TryFromMultipart, IntoParams)]
-#[try_from_multipart(rename_all = "camelCase")]
+#[derive(Debug, Clone, Deserialize, IntoParams)]
+#[serde(rename_all = "camelCase")]
 pub struct SetPostPriorityParams {
     /// 帖子Id
     pub post_id: Vec<i32>,
 
     /// 优先级
-    #[try_from_multipart(default)]
+    #[serde(default)]
     pub priority: i32,
 }
 
@@ -190,7 +196,7 @@ pub async fn set_post_priority(
     State(state): State<PostState>,
     auth_session: AuthSession,
     SecureClientIp(ip_addr): SecureClientIp,
-    TypedMultipart(params): TypedMultipart<SetPostPriorityParams>,
+    ExQuery(params): ExQuery<SetPostPriorityParams>,
 ) {
     let user_id = auth_session.user.unwrap().id();
 

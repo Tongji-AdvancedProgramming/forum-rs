@@ -230,18 +230,11 @@ impl SelectConsumer for Select<Entity> {
     type Error = sea_orm::DbErr;
 
     async fn select_consumer_one(self, db_conn: &Arc<Db>) -> Result<Option<Post>, Self::Error> {
-        self.into_json()
-            .one(db_conn.get_db())
-            .await
-            .map(|v| v.map(|v| serde_json::from_value(v).unwrap()))
+        self.one(db_conn.get_db()).await
     }
 
     async fn select_consumer_many(self, db_conn: &Arc<Db>) -> Result<Vec<Post>, Self::Error> {
-        self.into_json().all(db_conn.get_db()).await.map(|v| {
-            v.into_iter()
-                .map(|v| serde_json::from_value(v).unwrap())
-                .collect()
-        })
+        self.all(db_conn.get_db()).await
     }
 }
 
@@ -497,18 +490,15 @@ impl PostRepositoryTrait for PostRepository {
         order by post_date
         "#;
 
-        JsonValue::find_by_statement(Statement::from_sql_and_values(
-            DbBackend::MySql,
-            sql,
-            [post_id.into()],
-        ))
-        .all(self.db.get_db())
-        .await
-        .map(|v| {
-            v.into_iter()
-                .map(|v| serde_json::from_value(v).unwrap())
-                .collect()
-        })
+        Entity::find()
+            .from_raw_sql(Statement::from_sql_and_values(
+                DbBackend::MySql,
+                sql,
+                [post_id.into()],
+            ))
+            .into_model()
+            .all(self.db.get_db())
+            .await
     }
 
     /// 递归查询某个帖子的父帖子
@@ -527,14 +517,15 @@ impl PostRepositoryTrait for PostRepository {
         limit 1
         "#;
 
-        JsonValue::find_by_statement(Statement::from_sql_and_values(
-            DbBackend::MySql,
-            sql,
-            [post_id.into()],
-        ))
-        .one(self.db.get_db())
-        .await
-        .map(|v| v.map(|v| serde_json::from_value(v).unwrap()))
+        Entity::find()
+            .from_raw_sql(Statement::from_sql_and_values(
+                DbBackend::MySql,
+                sql,
+                [post_id.into()],
+            ))
+            .into_model()
+            .one(self.db.get_db())
+            .await
     }
 
     async fn get_post_sender_user_level(&self, post_id: i32) -> Result<Option<i64>, Self::Error> {

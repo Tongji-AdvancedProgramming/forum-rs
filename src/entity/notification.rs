@@ -5,11 +5,11 @@ use serde::{Deserialize, Serialize};
 /// 发帖日志表
 #[derive(Debug, Clone, Default, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "notification")]
-#[serde(default, rename_all(serialize = "camelCase"))]
+#[serde(default, rename_all = "camelCase")]
 pub struct Model {
     /// 序号(主键,自动增长)
     #[sea_orm(primary_key)]
-    pub ntf_id: i32,
+    pub ntf_id: u64,
 
     pub ntf_type: String,
 

@@ -81,8 +81,8 @@ impl StudentInfoServiceTrait for StudentInfoService {
             } else {
                 let student_info = StudentInfo {
                     stu_no: stu_no.to_string(),
-                    description: "".to_string(),
-                    nickname: student.unwrap().stu_name,
+                    description: Some("".to_string()),
+                    nickname: Some(student.unwrap().stu_name.unwrap()),
                 }
                 .into_active_model();
 
@@ -125,7 +125,7 @@ impl StudentInfoServiceTrait for StudentInfoService {
             .await?
             .ok_or(ParameterError::InvalidParameter("指定学生不存在"))?
             .into_active_model();
-        si.nickname = Set(nickname.to_string());
+        si.nickname = Set(Some(nickname.to_string()));
         si.save(self.db_conn.get_db()).await?;
         Ok(())
     }
@@ -136,7 +136,7 @@ impl StudentInfoServiceTrait for StudentInfoService {
             .await?
             .ok_or(ParameterError::InvalidParameter("指定学生不存在"))?
             .into_active_model();
-        si.description = Set(signature.to_string());
+        si.description = Set(Some(signature.to_string()));
         si.save(self.db_conn.get_db()).await?;
         Ok(())
     }

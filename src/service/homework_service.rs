@@ -91,7 +91,7 @@ impl HomeworkServiceTrait for HomeworkService {
             self.homework_repository
                 .get_homework_uploaded_by_week(
                     &board.course.as_ref().unwrap().course_term,
-                    &board.course.as_ref().unwrap().course_code,
+                    board.course.as_ref().unwrap().course_code.as_ref().unwrap(),
                     board.week,
                     with_hidden,
                 )
@@ -104,16 +104,19 @@ impl HomeworkServiceTrait for HomeworkService {
 
     async fn post_homework(
         &self,
-        homework_uploaded: homework_uploaded::Model,
+        mut homework_uploaded: homework_uploaded::Model,
     ) -> Result<(), ProcessError> {
-        let mut homework_uploaded = homework_uploaded;
-
         // 出现文件名时，检查正确性，并下载内容并计算MD5
-        if !homework_uploaded.hwup_filename.is_empty() {
-            let object_name: String = if homework_uploaded.hwup_filename.starts_with("forum/") {
-                String::from(&homework_uploaded.hwup_filename[5..])
+        if !homework_uploaded.hwup_filename.as_ref().unwrap().is_empty() {
+            let object_name: String = if homework_uploaded
+                .hwup_filename
+                .as_ref()
+                .unwrap()
+                .starts_with("forum/")
+            {
+                String::from(&homework_uploaded.hwup_filename.as_ref().unwrap()[5..])
             } else {
-                String::from(&homework_uploaded.hwup_filename)
+                String::from(homework_uploaded.hwup_filename.clone().unwrap())
             };
 
             let stat = self
@@ -130,7 +133,7 @@ impl HomeworkServiceTrait for HomeworkService {
                         "无法从存储系统中寻找到文件，请检查文件名填写是否正确".into(),
                     )
                 })?;
-            homework_uploaded.hwup_file_md5 = stat.etag;
+            homework_uploaded.hwup_file_md5 = Some(stat.etag);
         }
 
         use homework_uploaded::Column as Col;

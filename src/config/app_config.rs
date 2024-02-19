@@ -7,7 +7,7 @@ use crate::config::permission::PermissionConfig;
 use crate::config::redis::RedisAppConfig;
 use config::Config;
 use lazy_static::lazy_static;
-use log::error;
+use log::{error, info};
 use serde::Deserialize;
 
 use crate::panic;
@@ -32,8 +32,16 @@ lazy_static! {
 }
 
 pub fn init() {
+    let production = std::env::var("PROD").map(|_| true).unwrap_or(false);
+    info!("Production mode: {}", production);
+
     let settings = Config::builder()
         .add_source(config::File::with_name("app_config.toml"))
+        .add_source(if production {
+            config::File::with_name("app_config.prod.toml")
+        } else {
+            config::File::with_name("app_config.dev.toml")
+        })
         .build()
         .unwrap_or_else(|e| {
             error!(

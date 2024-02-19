@@ -66,8 +66,13 @@ impl UploadServiceTrait for UploadService {
 
         let mut cursor = Cursor::new(input_file);
 
-        let mut put_object_args: PutObjectArgs<'_, Cursor<&[u8]>, SseS3> =
-            PutObjectArgs::new(&conf.bucket, &key, &mut cursor, None, None)?;
+        let mut put_object_args: PutObjectArgs<'_, Cursor<&[u8]>, SseS3> = PutObjectArgs::new(
+            &conf.bucket,
+            &key,
+            &mut cursor,
+            Some(input_file.len()),
+            None,
+        )?;
         put_object_args.content_type = content_type;
 
         self.s3.client.put_object(&mut put_object_args).await?;
@@ -87,8 +92,13 @@ impl UploadServiceTrait for UploadService {
         let mut cursor = Cursor::new(input_file);
 
         let key = format!("{}/{}", prefix, stu_no);
-        let mut put_obj_args: PutObjectArgs<'_, Cursor<&[u8]>, SseS3> =
-            PutObjectArgs::new(&conf.bucket, &key, &mut cursor, None, None)?;
+        let mut put_obj_args: PutObjectArgs<'_, Cursor<&[u8]>, SseS3> = PutObjectArgs::new(
+            &conf.bucket,
+            &key,
+            &mut cursor,
+            Some(input_file.len()),
+            None,
+        )?;
         put_obj_args.content_type = content_type;
 
         self.s3.client.put_object(&mut put_obj_args).await?;

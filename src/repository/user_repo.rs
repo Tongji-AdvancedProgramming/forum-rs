@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use sea_orm::{ColumnTrait, EntityOrSelect, EntityTrait, QueryFilter, QuerySelect};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 
 use crate::config::database::{DatabaseTrait, Db};
 use crate::entity::student;
@@ -42,9 +42,10 @@ impl UserRepositoryTrait for UserRepository {
         use student::Entity as Student;
 
         let user = Student::find()
-            .select()
+            .select_only()
             .columns([
                 Col::StuTerm,
+                Col::StuNo,
                 Col::StuUserLevel,
                 Col::StuCno1,
                 Col::StuCno1IsDel,

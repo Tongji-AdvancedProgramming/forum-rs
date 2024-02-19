@@ -95,13 +95,13 @@ impl CourseService {
     fn get_student_courses_from_entity(stu: &student::Model) -> Vec<String> {
         let mut result = vec![];
 
-        if stu.stu_cno_1.is_some() && stu.stu_cno_1_is_del == "0" {
+        if stu.stu_cno_1.is_some() && stu.stu_cno_1_is_del.as_ref().unwrap() == "0" {
             result.push(stu.stu_cno_1.as_ref().unwrap().clone());
         }
-        if stu.stu_cno_2.is_some() && stu.stu_cno_2_is_del == "0" {
+        if stu.stu_cno_2.is_some() && stu.stu_cno_2_is_del.as_ref().unwrap() == "0" {
             result.push(stu.stu_cno_2.as_ref().unwrap().clone());
         }
-        if stu.stu_cno_3.is_some() && stu.stu_cno_3_is_del == "0" {
+        if stu.stu_cno_3.is_some() && stu.stu_cno_3_is_del.as_ref().unwrap() == "0" {
             result.push(stu.stu_cno_3.as_ref().unwrap().clone());
         }
 
@@ -134,19 +134,19 @@ impl CourseService {
                 let chapters: Vec<_> = homework
                     .iter()
                     .map(|hw| hw.hw_chapter)
-                    .filter(|&c| c < 20)
+                    .filter(|&c| c.unwrap() < 20)
                     .collect::<BTreeSet<_>>()
                     .into_iter()
-                    .map(|c| c.to_string())
+                    .map(|c| c.unwrap().to_string())
                     .collect();
 
-                let mut week_title = format!("第{}周", week_index);
+                let mut week_title = format!("第{}周", week_index.as_ref().unwrap());
                 if !chapters.is_empty() {
                     week_title = format!("{} - 第{}章", week_title, chapters.join(","))
                 }
 
                 Week {
-                    number: week_index,
+                    number: week_index.unwrap(),
                     homeworks: homework,
                     content: week_title,
                 }
@@ -169,7 +169,9 @@ impl CourseServiceTrait for CourseService {
         }
         let stu = stu.unwrap();
 
-        if stu.stu_user_level.parse::<i32>().unwrap() >= self.app_config.permission.ta {
+        if stu.stu_user_level.as_ref().unwrap().parse::<i32>().unwrap()
+            >= self.app_config.permission.ta
+        {
             // 用户是管理员或更高，允许访问所有课程
             let courses = course::Entity::find()
                 .group_by(course::Column::CourseCode)
@@ -178,7 +180,12 @@ impl CourseServiceTrait for CourseService {
                 .await?;
             Ok(courses
                 .iter()
-                .map(|c| (c.course_term.clone(), c.course_code.clone()))
+                .map(|c| {
+                    (
+                        c.course_term.clone(),
+                        c.course_code.as_ref().unwrap().clone(),
+                    )
+                })
                 .collect())
         } else {
             let result = Self::get_student_courses_from_entity(&stu);
@@ -192,7 +199,12 @@ impl CourseServiceTrait for CourseService {
 
             Ok(courses
                 .iter()
-                .map(|c| (c.course_term.clone(), c.course_code.clone()))
+                .map(|c| {
+                    (
+                        c.course_term.clone(),
+                        c.course_code.as_ref().unwrap().clone(),
+                    )
+                })
                 .collect())
         }
     }
@@ -208,7 +220,9 @@ impl CourseServiceTrait for CourseService {
                 }
                 let stu = stu.unwrap();
 
-                if stu.stu_user_level.parse::<i32>().unwrap() >= self.app_config.permission.ta {
+                if stu.stu_user_level.as_ref().unwrap().parse::<i32>().unwrap()
+                    >= self.app_config.permission.ta
+                {
                     // 用户是管理员或更高，允许访问所有课程
                     let courses = course::Entity::find()
                         .columns([course::Column::CourseTerm, course::Column::CourseNo])
@@ -265,14 +279,17 @@ impl CourseServiceTrait for CourseService {
                     .filter(|(_, v)| ready(!v.is_empty()))
                     .then(|(_, v)| async move {
                         let course = Model {
-                            course_short_name: "".into(),
+                            course_short_name: Some("".into()),
                             course_no: "".into(),
                             ..v.first().cloned().unwrap()
                         };
 
                         let mut course: course_tree::Course = course.into();
                         course.weeks = self
-                            .get_weeks(&course._course.course_term, &course._course.course_code)
+                            .get_weeks(
+                                &course._course.course_term,
+                                course._course.course_code.as_ref().unwrap(),
+                            )
                             .await?;
                         Ok(course)
                     })

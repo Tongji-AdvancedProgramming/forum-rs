@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 /// 已上传的作业
 #[derive(Debug, Clone, Default, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "homework_uploaded")]
-#[serde(default, rename_all(serialize = "camelCase"))]
+#[serde(default, rename_all = "camelCase")]
 pub struct Model {
     /// 学期(主键+外键)
     #[sea_orm(primary_key)]
@@ -21,24 +21,24 @@ pub struct Model {
     pub hwup_id: String,
 
     /// 布置周
-    pub hwup_week: i32,
+    pub hwup_week: Option<i32>,
 
     /// 章节(0-20: 第0-20章 90:大作业 98:文档作业 99:其它作业)
-    pub hwup_chapter: i32,
+    pub hwup_chapter: Option<i32>,
 
     /// 上传的文件名
-    pub hwup_filename: String,
+    pub hwup_filename: Option<String>,
 
     /// 上传的文件的MD5
-    #[sea_orm(primary_key, column_name = "hwup_filemd5")]
+    #[sea_orm(column_name = "hwup_filemd5")]
     #[serde(rename = "hwupFilemd5")]
-    pub hwup_file_md5: String,
+    pub hwup_file_md5: Option<String>,
 
     /// 文件导入本论坛的时间
-    pub hwup_date_add: NaiveDateTime,
+    pub hwup_date_add: Option<NaiveDateTime>,
 
     /// 文件是否已删除('0':可正常显示/下载 '1':不显示/不提供下载 注意:enum不要当int处理)
-    pub hwup_is_del: String,
+    pub hwup_is_del: Option<String>,
 
     /// 备注
     pub hwup_comment: Option<String>,

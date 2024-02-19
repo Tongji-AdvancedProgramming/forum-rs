@@ -31,7 +31,7 @@ impl AuthUser for Student {
     }
 
     fn session_auth_hash(&self) -> &[u8] {
-        self.stu_password.as_bytes()
+        self.stu_password.as_ref().unwrap().as_bytes()
     }
 }
 
@@ -81,7 +81,9 @@ impl AuthnBackend for AuthBackend {
     ) -> Result<Option<Self::User>, Self::Error> {
         let user = self.user_repo.find_by_id(&creds.username).await;
 
-        Ok(user.filter(|user| Self::verify_password(&user.stu_password, &creds.password)))
+        Ok(user.filter(|user| {
+            Self::verify_password(user.stu_password.as_ref().unwrap(), &creds.password)
+        }))
     }
 
     async fn get_user(&self, user_id: &UserId<Self>) -> Result<Option<Self::User>, Self::Error> {
@@ -99,7 +101,7 @@ impl AuthzBackend for AuthBackend {
     ) -> Result<HashSet<Self::Permission>, Self::Error> {
         let mut permission_set: HashSet<Self::Permission> = Default::default();
 
-        let level: i32 = user.stu_user_level.parse().unwrap_or(0);
+        let level: i32 = user.stu_user_level.as_ref().unwrap().parse().unwrap_or(0);
         if level >= self.permission_config.admin {
             permission_set.insert(Self::Permission::ADMIN);
         }

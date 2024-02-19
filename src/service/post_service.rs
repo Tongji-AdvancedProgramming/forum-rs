@@ -8,7 +8,6 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, NotSet, QueryFilter, QuerySelect,
 };
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 use crate::entity::notification;
 use crate::error::param_error::ParameterError::InvalidParameter;
@@ -25,7 +24,7 @@ use crate::{
         post::{self, Column as Cols, Entity},
         student,
     },
-    error::{api_error::ApiError, auth_error::AuthError, param_error::ParameterError},
+    error::{api_error::ApiError, auth_error::AuthError},
     repository::post_repo::{PostRepository, PostRepositoryTrait},
     service::{
         board_service::BoardServiceTrait, log_service::LogServiceTrait,
@@ -226,8 +225,8 @@ impl PostServiceTrait for PostService {
 
         Ok(post.is_some()
             && stu_course_codes.into_iter().any(|codes| {
-                codes.0 == post.as_ref().unwrap().post_term
-                    && codes.1 == post.as_ref().unwrap().post_course_code
+                post.as_ref().unwrap().post_term.as_ref().unwrap() == &codes.0
+                    && post.as_ref().unwrap().post_course_code.as_ref().unwrap() == &codes.1
             }))
     }
 
@@ -242,8 +241,8 @@ impl PostServiceTrait for PostService {
         let board = self.board_service.parse_id(board_id)?;
 
         Ok(stu_course_codes.into_iter().any(|codes| {
-            codes.0 == board.course.as_ref().unwrap().course_term
-                && codes.1 == board.course.as_ref().unwrap().course_code
+            board.course.as_ref().unwrap().course_term == codes.0
+                && board.course.as_ref().unwrap().course_code.as_ref().unwrap() == &codes.1
         }))
     }
 
@@ -259,17 +258,16 @@ impl PostServiceTrait for PostService {
             .await?
             .ok_or(InvalidParameter("无效的帖子Id"))?;
 
-        let user = student::Entity::find()
+        let stu_level: String = student::Entity::find()
             .select_only()
             .column(student::Column::StuUserLevel)
             .filter(student::Column::StuNo.eq(user_id))
-            .into_json()
+            .into_tuple()
             .one(self.db_conn.get_db())
             .await?
-            .map(|v| serde_json::from_value::<student::Model>(v).unwrap())
-            .ok_or(ParameterError::InvalidParameter("无效的用户id"))?;
+            .ok_or(InvalidParameter("无效的用户id"))?;
 
-        Ok(user.stu_user_level.parse::<i64>().unwrap_or(0) < post_level)
+        Ok(stu_level.parse::<i64>().unwrap() >= post_level)
     }
 
     async fn ensure_edit_posts_permission(
@@ -283,17 +281,16 @@ impl PostServiceTrait for PostService {
             .await?
             .ok_or(InvalidParameter("无效的帖子Id"))?;
 
-        let user = student::Entity::find()
+        let stu_level: String = student::Entity::find()
             .select_only()
             .column(student::Column::StuUserLevel)
             .filter(student::Column::StuNo.eq(user_id))
-            .into_json()
+            .into_tuple()
             .one(self.db_conn.get_db())
-            .await
-            .map(|v| v.map(|v| serde_json::from_value::<student::Model>(v).unwrap()))?
-            .ok_or(ParameterError::InvalidParameter("无效的用户id"))?;
+            .await?
+            .ok_or(InvalidParameter("无效的用户id"))?;
 
-        Ok(user.stu_user_level.parse::<i64>().unwrap_or(0) < post_level)
+        Ok(stu_level.parse::<i64>().unwrap() >= post_level)
     }
 
     /// 获取板块内的帖子
@@ -321,7 +318,7 @@ impl PostServiceTrait for PostService {
                 .post_repository
                 .get_week_posts(
                     &course.course_term,
-                    &course.course_code,
+                    course.course_code.as_ref().unwrap(),
                     board.week,
                     tag_names_ref,
                     show_hidden,
@@ -336,7 +333,7 @@ impl PostServiceTrait for PostService {
                 .post_repository
                 .get_homework_posts(
                     &course.course_term,
-                    &course.course_code,
+                    course.course_code.as_ref().unwrap(),
                     board.homework.as_ref().unwrap().hw_id,
                     tag_names_ref,
                     show_hidden,
@@ -351,7 +348,7 @@ impl PostServiceTrait for PostService {
                 .post_repository
                 .get_course_posts(
                     &course.course_term,
-                    &course.course_code,
+                    course.course_code.as_ref().unwrap(),
                     tag_names_ref,
                     show_hidden,
                     with_content,
@@ -365,7 +362,7 @@ impl PostServiceTrait for PostService {
                 .post_repository
                 .get_week_summary_posts(
                     &course.course_term,
-                    &course.course_code,
+                    course.course_code.as_ref().unwrap(),
                     board.week,
                     tag_names_ref,
                     show_hidden,
@@ -380,7 +377,7 @@ impl PostServiceTrait for PostService {
                 .post_repository
                 .get_course_summary_posts(
                     &course.course_term,
-                    &course.course_code,
+                    course.course_code.as_ref().unwrap(),
                     tag_names_ref,
                     show_hidden,
                     with_content,
@@ -413,7 +410,7 @@ impl PostServiceTrait for PostService {
                 .post_repository
                 .get_week_posts_count(
                     &course.course_term,
-                    &course.course_code,
+                    course.course_code.as_ref().unwrap(),
                     board.week,
                     tag_names_ref,
                     show_hidden,
@@ -425,7 +422,7 @@ impl PostServiceTrait for PostService {
                 .post_repository
                 .get_homework_posys_count(
                     &course.course_term,
-                    &course.course_code,
+                    course.course_code.as_ref().unwrap(),
                     board.homework.as_ref().unwrap().hw_id,
                     tag_names_ref,
                     show_hidden,
@@ -437,7 +434,7 @@ impl PostServiceTrait for PostService {
                 .post_repository
                 .get_course_posts_count(
                     &course.course_term,
-                    &course.course_code,
+                    course.course_code.as_ref().unwrap(),
                     tag_names_ref,
                     show_hidden,
                     with_replies,
@@ -448,7 +445,7 @@ impl PostServiceTrait for PostService {
                 .post_repository
                 .get_week_summary_posts_count(
                     &course.course_term,
-                    &course.course_code,
+                    course.course_code.as_ref().unwrap(),
                     board.week,
                     tag_names_ref,
                     show_hidden,
@@ -460,7 +457,7 @@ impl PostServiceTrait for PostService {
                 .post_repository
                 .get_course_posts_count(
                     &course.course_term,
-                    &course.course_code,
+                    course.course_code.as_ref().unwrap(),
                     tag_names_ref,
                     show_hidden,
                     with_replies,
@@ -481,7 +478,7 @@ impl PostServiceTrait for PostService {
     ) -> Result<i32, ApiError> {
         let board = self.board_service.parse_id_and_fetch(board_id).await?;
 
-        let post_term = board.course.as_ref().unwrap().course_term.clone();
+        let post_term = Some(board.course.as_ref().unwrap().course_term.clone());
         let post_course_code = board.course.as_ref().unwrap().course_code.clone();
 
         let post_hw_id: i16;
@@ -509,7 +506,7 @@ impl PostServiceTrait for PostService {
             PostLocation::Homework => {
                 post_hw_id = board.homework.as_ref().unwrap().hw_id;
                 post_week = board.week;
-                post_chapter = board.homework.as_ref().unwrap().hw_chapter;
+                post_chapter = board.homework.as_ref().unwrap().hw_chapter.unwrap();
             }
             _ => {
                 return Err(
@@ -518,14 +515,18 @@ impl PostServiceTrait for PostService {
             }
         }
 
+        let post_hw_id = Some(post_hw_id);
+        let post_week = Some(post_week);
+        let post_chapter = Some(post_chapter);
+
         let post_answer_id = None;
-        let post_type = "Question".into();
-        let post_sender_no = user_id.into();
-        let post_priority = "0".into();
+        let post_type = Some("Question".into());
+        let post_sender_no = Some(user_id.into());
+        let post_priority = Some("0".into());
 
         let post_title = Some(title.into());
         let post_content = Some(content.into());
-        let post_date = Local::now().naive_local();
+        let post_date = Some(Local::now().naive_local());
 
         let post = post::Model {
             post_term,
@@ -582,17 +583,18 @@ impl PostServiceTrait for PostService {
         let post_chapter = father_post.post_chapter;
 
         let post_title = None;
-        let post_sender_no = user_id.into();
+        let post_sender_no = Some(user_id.into());
         let post_answer_id = Some(father_post_id);
         let post_content = Some(content.into());
-        let post_date = Local::now().naive_local();
+        let post_date = Some(Local::now().naive_local());
 
         let post_type: String;
-        if user_id == father_post.post_sender_no {
+        if user_id == father_post.post_sender_no.as_ref().unwrap() {
             post_type = "Answer".into();
         } else {
             post_type = "QuestionsAdditional".into();
         }
+        let post_type = Some(post_type);
 
         let new_post = post::Model {
             post_term,
@@ -625,14 +627,14 @@ impl PostServiceTrait for PostService {
             .await;
 
         // 发送通知
-        if father_post.post_sender_no != user_id {
+        if father_post.post_sender_no.as_ref().unwrap() != user_id {
             let ntf_title = "收到新回复".to_string();
             let ntf_content = format!(
                 "{}",
                 HtmlCleaner::html_to_text(new_post.post_content.as_ref().unwrap()).abbreviate(35)
             );
             let ntf_type = "REPLY".to_string();
-            let ntf_receiver = father_post.post_sender_no.clone();
+            let ntf_receiver = father_post.post_sender_no.unwrap().clone();
 
             let notification = notification::Model {
                 ntf_id: 0,
@@ -710,10 +712,10 @@ impl PostServiceTrait for PostService {
 
         tags_ref
             .iter_mut()
-            .for_each(|tag_ref| **tag_ref = Set("0".to_string()));
+            .for_each(|tag_ref| **tag_ref = Set(Some("0".to_string())));
         tag.iter()
             .filter(|&&t| t >= 0 && t < (tags_len as i32).clone())
-            .for_each(|&i| *tags_ref[i as usize] = Set("1".to_string()));
+            .for_each(|&i| *tags_ref[i as usize] = Set(Some("1".to_string())));
 
         post.save(self.db_conn.get_db()).await?;
 
@@ -740,7 +742,7 @@ impl PostServiceTrait for PostService {
             .ok_or(InvalidParameter("帖子不存在"))?
             .into_active_model();
 
-        post.post_priority = Set(priority.to_string());
+        post.post_priority = Set(Some(priority.to_string()));
         post.save(self.db_conn.get_db()).await?;
 
         // 记录日志
@@ -779,7 +781,10 @@ impl PostServiceTrait for PostService {
         let mut posts = self.post_repository.get_posts_recursively(post_id).await?;
 
         if !with_hidden {
-            posts = posts.into_iter().filter(|p| p.post_is_del == "0").collect();
+            posts = posts
+                .into_iter()
+                .filter(|p| p.post_is_del.as_ref().unwrap() == "0")
+                .collect();
         }
 
         Ok(GetPostsResult { posts })

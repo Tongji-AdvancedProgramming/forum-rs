@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 /// 作业
 #[derive(Debug, Clone, Default, Deserialize, Serialize, DeriveEntityModel, utoipa::ToSchema)]
 #[sea_orm(table_name = "homework")]
-#[serde(default, rename_all(serialize = "camelCase"))]
+#[serde(default, rename_all = "camelCase")]
 pub struct Model {
     /// 学期(主键+外键)
     #[sea_orm(primary_key)]
@@ -13,37 +13,37 @@ pub struct Model {
 
     /// 作业课程编号
     #[sea_orm(column_name = "hw_ccode")]
-    #[serde(rename(serialize = "hwCcode", deserialize = "hw_ccode"))]
-    pub hw_course_code: String,
+    #[serde(rename = "hwCcode")]
+    pub hw_course_code: Option<String>,
 
     /// 作业序号(主键)
     #[sea_orm(primary_key)]
     pub hw_id: i16,
 
     /// 布置周
-    pub hw_week: i8,
+    pub hw_week: Option<i8>,
 
     /// 章节(0-20: 第0-20章 90:大作业 98:文档作业 99:其它作业)
-    pub hw_chapter: i8,
+    pub hw_chapter: Option<i8>,
 
     /// 交作业网站的提交文件名
-    pub hw_filename: String,
+    pub hw_filename: Option<String>,
 
     /// 作业描述
-    pub hw_description: String,
+    pub hw_description: Option<String>,
 
     /// 作业提交开始时间
     #[sea_orm(column_name = "hw_bdate")]
-    #[serde(rename(serialize = "hwBdate", deserialize = "hw_bdate"))]
-    pub hw_begin_date: NaiveDateTime,
+    #[serde(rename = "hwBdate")]
+    pub hw_begin_date: Option<NaiveDateTime>,
 
     /// 作业提交结束时间
     #[sea_orm(column_name = "hw_edate")]
-    #[serde(rename(serialize = "hwEdate", deserialize = "hw_edate"))]
-    pub hw_end_date: NaiveDateTime,
+    #[serde(rename = "hwEdate")]
+    pub hw_end_date: Option<NaiveDateTime>,
 
     /// 本作业加入论坛的时间
-    pub hw_add_date: NaiveDateTime,
+    pub hw_add_date: Option<NaiveDateTime>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

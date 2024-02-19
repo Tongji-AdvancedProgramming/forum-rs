@@ -67,7 +67,7 @@ impl SearchEngineServiceRunner {
 
                 let post = post::Entity::find_by_id(post_id).one(db.get_db()).await;
                 if let Ok(Some(post)) = post {
-                    if post.post_is_del == "1" {
+                    if post.post_is_del.as_ref().unwrap() == "1" {
                         let _ = meili_client
                             .get_client()
                             .index(&config.meili.index.post)

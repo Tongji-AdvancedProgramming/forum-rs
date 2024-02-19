@@ -23,7 +23,7 @@ pub trait NotificationServiceTrait {
     async fn get_notifications(&self, user_id: &str) -> Result<Vec<Notification>, ApiError>;
 
     /// 用户已读通知
-    async fn user_read_notification(&self, ntf_id: i32, user_id: &str) -> Result<(), ApiError>;
+    async fn user_read_notification(&self, ntf_id: u64, user_id: &str) -> Result<(), ApiError>;
 
     /// 用户已读所有通知
     async fn user_read_all_notification(&self, user_id: &str) -> Result<(), ApiError>;
@@ -109,7 +109,7 @@ impl NotificationServiceTrait for NotificationService {
             .await
     }
 
-    async fn user_read_notification(&self, ntf_id: i32, user_id: &str) -> Result<(), ApiError> {
+    async fn user_read_notification(&self, ntf_id: u64, user_id: &str) -> Result<(), ApiError> {
         if let Some(ntf) = Entity::find_by_id(ntf_id)
             .one(self.db_conn.get_db())
             .await?

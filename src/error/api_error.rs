@@ -33,14 +33,13 @@ impl IntoResponse for ApiError {
 
 impl From<DbErr> for ApiError {
     fn from(value: DbErr) -> Self {
-        error!("sea_orm error occurred: {}", value);
-        Self::ProcessError(ProcessError::SeaOrmDatabaseError)
+        Self::ProcessError(ProcessError::SeaOrmDatabaseError(value))
     }
 }
 
 use minio::s3::error::Error as MinioErr;
 impl From<MinioErr> for ApiError {
-    fn from(_: MinioErr) -> Self {
-        Self::ProcessError(ProcessError::MinioError)
+    fn from(value: MinioErr) -> Self {
+        Self::ProcessError(ProcessError::MinioError(value))
     }
 }
