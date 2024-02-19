@@ -44,6 +44,8 @@ pub fn routes(
     meili_client: Arc<Meili>,
     auth_layer: AuthManagerLayer<AuthBackend, impl SessionStore + Clone>,
 ) -> IntoMakeServiceWithConnectInfo<Router, SocketAddr> {
+    let production = std::env::var("PROD").map(|_| true).unwrap_or(false);
+
     let app_config = {
         let config = APP_CONFIG.clone();
         let guard = config.read().unwrap();
@@ -97,7 +99,11 @@ pub fn routes(
         .layer(auth_layer)
         .layer(TraceLayer::new_for_http())
         .layer(DefaultBodyLimit::max(1024 * 1024 * 10))
-        .layer(SecureClientIpSource::ConnectInfo.into_extension()); // 在生产中改成别的
+        .layer(if production {
+            SecureClientIpSource::XRealIp.into_extension()
+        } else {
+            SecureClientIpSource::ConnectInfo.into_extension()
+        }); // 在生产中改成别的
 
     app_router.into_make_service_with_connect_info()
 }

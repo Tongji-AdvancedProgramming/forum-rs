@@ -2,6 +2,8 @@
 #    论坛后端系统配置文件
 # ======================
 
+port = 9002
+
 # 数据库连接信息
 [database]
 url = "mysql://forum:rememberus1nthed%40yofend@10.80.43.196:3306/forum?serverTimezone=Asia/Shanghai"
